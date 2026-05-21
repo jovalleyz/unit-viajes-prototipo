@@ -303,7 +303,8 @@ input,select,textarea,button{font-family:inherit}
     margin-bottom:10px;
   }
   .sb-trip-item:last-child{margin-bottom:0}
-  .sb-trip-ico{font-size:14px;opacity:.8;flex-shrink:0;margin-top:1px}
+  .sb-trip-ico{width:16px;height:16px;flex-shrink:0;margin-top:1px;opacity:.75;color:#fff;display:flex;align-items:center;justify-content:center}
+  .sb-trip-ico svg{width:16px;height:16px}
   .sb-trip-txt{font-size:13px;color:rgba(255,255,255,.85);line-height:1.3}
   .sb-trip-txt strong{color:#fff;font-weight:700}
 
@@ -420,15 +421,15 @@ input,select,textarea,button{font-family:inherit}
     <div class="sb-section" id="sb-summary" style="display:none">
       <div class="sb-sec-title">Tu Viaje</div>
       <div class="sb-trip-item">
-        <span class="sb-trip-ico">📍</span>
+        <span class="sb-trip-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
         <div class="sb-trip-txt" id="sb-destino">—</div>
       </div>
       <div class="sb-trip-item">
-        <span class="sb-trip-ico">📅</span>
+        <span class="sb-trip-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
         <div class="sb-trip-txt" id="sb-dates">—</div>
       </div>
       <div class="sb-trip-item">
-        <span class="sb-trip-ico">👥</span>
+        <span class="sb-trip-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></span>
         <div class="sb-trip-txt" id="sb-tvl">—</div>
       </div>
     </div>
