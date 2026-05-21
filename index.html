@@ -214,8 +214,10 @@ input,select,textarea,button{font-family:inherit}
 .tipo-card{border:2px solid var(--gray-mid);border-radius:16px;padding:18px 8px 14px;text-align:center;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px}
 .tipo-card:hover{border-color:#BCCBF0}
 .tipo-card.selected{border-color:var(--navy);background:#EEF3FF}
-.tipo-card-ico{font-size:30px;line-height:1}
-.tipo-card-lbl{font-size:12px;font-weight:700;color:var(--gray-text)}
+.tipo-card-ico{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--gray-text);transition:color .2s}
+.tipo-card-ico svg{width:44px;height:44px}
+.tipo-card-lbl{font-size:12px;font-weight:700;color:var(--gray-text);transition:color .2s}
+.tipo-card.selected .tipo-card-ico{color:var(--navy)}
 .tipo-card.selected .tipo-card-lbl{color:var(--navy)}
 
 /* ═══ FAB WHATSAPP ═══ */
@@ -505,15 +507,35 @@ input,select,textarea,button{font-family:inherit}
           <label class="lbl">Motivo del viaje</label>
           <div class="tipo-grid">
             <div class="tipo-card" id="tipo-placer" onclick="setTipo('placer')">
-              <span class="tipo-card-ico">🏖️</span>
+              <span class="tipo-card-ico">
+                <!-- Airplane -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 2L11 13"/>
+                  <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+              </span>
               <span class="tipo-card-lbl">Placer</span>
             </div>
             <div class="tipo-card" id="tipo-negocios" onclick="setTipo('negocios')">
-              <span class="tipo-card-ico">💼</span>
+              <span class="tipo-card-ico">
+                <!-- Briefcase -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2"/>
+                  <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+                  <line x1="12" y1="12" x2="12" y2="12.01"/>
+                  <path d="M2 12h20"/>
+                </svg>
+              </span>
               <span class="tipo-card-lbl">Negocios</span>
             </div>
             <div class="tipo-card" id="tipo-estudio" onclick="setTipo('estudio')">
-              <span class="tipo-card-ico">🎓</span>
+              <span class="tipo-card-ico">
+                <!-- Open book -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+                  <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+                </svg>
+              </span>
               <span class="tipo-card-lbl">Estudio</span>
             </div>
           </div>
