@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<title>UNIT — Seguro de Viaje</title>
+<style>
+@font-face{
+  font-family:'Google Sans';
+  src:url('fonts/GoogleSans-VariableFont_GRAD,opsz,wght.ttf') format('truetype');
+  font-weight:100 900;font-style:normal;
+}
+@font-face{
+  font-family:'Google Sans';
+  src:url('fonts/GoogleSans-Italic-VariableFont_GRAD,opsz,wght.ttf') format('truetype');
+  font-weight:100 900;font-style:italic;
+}
+:root{
+  --navy:#002169; --orange:#FF5F00; --white:#fff;
+  --gray-bg:#F4F5F7; --gray-mid:#DDE1E7; --gray-text:#6B7280;
+  --dark:#111827; --success:#16A34A; --error:#DC2626;
+  --sidebar-w:300px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#E8EAF0}
+body{font-family:'Google Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif}
+input,select,textarea,button{font-family:inherit}
+
+/* ═══ SHELL ═══ */
+.app{
+  display:flex;flex-direction:column;min-height:100vh;
+  max-width:520px;margin:0 auto;background:#fff;
+  box-shadow:0 0 40px rgba(0,0,0,.15);
+}
+
+/* ═══ MOBILE HEADER ═══ */
+.mob-header{
+  background:var(--navy);padding:12px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:20;flex-shrink:0;
+}
+.mob-header img{height:36px;width:auto}
+.mob-header-label{color:rgba(255,255,255,.7);font-size:12px;font-weight:500}
+
+/* ═══ PROGRESS ═══ */
+.progress-wrap{height:3px;background:var(--gray-mid);flex-shrink:0}
+.progress-fill{height:100%;background:var(--orange);transition:width .4s ease}
+.step-bar{
+  padding:10px 20px;background:var(--gray-bg);
+  border-bottom:1px solid var(--gray-mid);
+  display:flex;align-items:center;gap:6px;flex-shrink:0;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--gray-mid);transition:all .3s;flex-shrink:0}
+.dot.active{width:22px;border-radius:4px;background:var(--navy)}
+.dot.done{background:var(--orange)}
+.step-lbl{margin-left:auto;font-size:11px;color:var(--gray-text);font-weight:600;letter-spacing:.3px}
+
+/* ═══ SCREENS ═══ */
+@keyframes stepIn{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes stepOut{
+  from{opacity:1;transform:translateY(0)}
+  to{opacity:0;transform:translateY(-10px)}
+}
+.screen{display:none;flex:1;flex-direction:column}
+.screen.active{display:flex;animation:stepIn .38s cubic-bezier(0.16,1,0.3,1) both}
+.screen.leaving{display:flex;animation:stepOut .17s ease forwards;pointer-events:none}
+.scr-body{flex:1;padding:24px 20px;overflow-y:auto}
+.scr-foot{padding:14px 20px 28px;border-top:1px solid var(--gray-mid);background:#fff;flex-shrink:0}
+
+/* ═══ TYPOGRAPHY ═══ */
+.ttl{font-size:22px;font-weight:800;color:var(--dark);margin-bottom:4px}
+.sub{font-size:14px;color:var(--gray-text);margin-bottom:24px;line-height:1.4}
+
+/* ═══ FORM ═══ */
+.fld{margin-bottom:20px}
+.lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--gray-text);margin-bottom:8px;display:block}
+.inp{width:100%;padding:13px 14px;border:2px solid var(--gray-mid);border-radius:12px;font-size:15px;color:var(--dark);outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none;background:#fff}
+.inp:focus{border-color:var(--navy)}
+.inp.error{border-color:var(--error)}
+.err-msg{font-size:12px;color:var(--error);margin-top:5px;display:none}
+.date-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.date-sub{font-size:11px;color:var(--gray-text);margin-bottom:4px;font-weight:600}
+
+/* ═══ QTY ═══ */
+.qty-row{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border:2px solid var(--gray-mid);border-radius:12px;margin-bottom:8px}
+.qty-name{font-size:15px;font-weight:600;color:var(--dark)}
+.qty-note{font-size:12px;color:var(--gray-text);margin-top:1px}
+.qty-ctrl{display:flex;align-items:center;gap:10px}
+.q-btn{width:34px;height:34px;border-radius:50%;border:2px solid var(--navy);background:#fff;color:var(--navy);font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.q-btn:hover{background:var(--navy);color:#fff}
+.q-btn:disabled{border-color:var(--gray-mid);color:var(--gray-mid);cursor:not-allowed}
+.q-btn:disabled:hover{background:#fff;color:var(--gray-mid)}
+.q-val{font-size:20px;font-weight:800;color:var(--dark);min-width:22px;text-align:center}
+
+/* ═══ CARDS & ROWS ═══ */
+.sum-card{background:var(--gray-bg);border-radius:16px;padding:16px;margin-bottom:20px}
+.sum-dest{font-size:17px;font-weight:800;color:var(--dark);margin-bottom:3px}
+.sum-meta{font-size:13px;color:var(--gray-text);line-height:1.5}
+.p-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-mid)}
+.p-row:last-child{border-bottom:none}
+.p-lbl{font-size:14px;color:var(--dark)}
+.p-amt{font-size:14px;font-weight:700;color:var(--dark)}
+.total-bar{display:flex;justify-content:space-between;align-items:center;padding:16px;background:var(--navy);border-radius:14px;margin-top:14px}
+.total-lbl{font-size:15px;font-weight:700;color:#fff}
+.total-amt{font-size:26px;font-weight:900;color:var(--orange)}
+.sec-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--gray-text);margin-bottom:10px}
+.note{background:#EEF3FF;border-left:4px solid var(--navy);border-radius:0 10px 10px 0;padding:10px 14px;font-size:13px;color:var(--navy);margin-top:16px;line-height:1.4}
+.hr{height:1px;background:var(--gray-mid);margin:18px 0}
+.timer-badge{display:flex;align-items:center;gap:8px;padding:9px 14px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:10px;font-size:13px;color:#92400E;margin-top:14px}
+
+/* ═══ COVERAGE ═══ */
+.cov-sec{margin-bottom:18px}
+.cov-hdr{display:flex;align-items:center;gap:8px;padding:11px 16px;background:var(--navy);border-radius:12px 12px 0 0;color:#fff;font-size:13px;font-weight:700}
+.cov-hdr.kids{background:#3B5FA0}
+.cov-item{display:flex;align-items:center;gap:10px;padding:11px 16px;border:1px solid var(--gray-mid);border-top:none}
+.cov-item:last-child{border-radius:0 0 12px 12px}
+.cov-ck{color:var(--success);font-size:15px;flex-shrink:0}
+.cov-nm{font-size:14px;color:var(--dark);flex:1}
+.cov-am{font-size:13px;font-weight:700;color:var(--navy)}
+
+/* ═══ CONFIRM ═══ */
+.cf-row{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--gray-mid)}
+.cf-ico{font-size:20px;flex-shrink:0;margin-top:1px}
+.cf-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-text);margin-bottom:3px;font-weight:600}
+.cf-val{font-size:15px;font-weight:700;color:var(--dark)}
+.phone-row{display:flex;gap:8px}
+.phone-pfx{flex-shrink:0;padding:13px 12px;border:2px solid var(--gray-mid);border-radius:12px;font-size:14px;font-weight:700;background:var(--gray-bg);color:var(--dark)}
+.chk-row{display:flex;align-items:flex-start;gap:10px;margin:18px 0}
+.chk-row input[type=checkbox]{width:20px;height:20px;flex-shrink:0;cursor:pointer;accent-color:var(--navy);margin-top:2px}
+.chk-lbl{font-size:13px;color:var(--gray-text);line-height:1.5}
+.chk-lbl a{color:var(--navy);font-weight:700;text-decoration:none}
+
+/* ═══ PAYMENT CARD ═══ */
+.card-preview{background:linear-gradient(135deg,#1a3a6b 0%,#002169 60%,#003399 100%);border-radius:18px;padding:22px 20px 18px;color:#fff;margin-bottom:22px;position:relative;overflow:hidden}
+.card-preview::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.06)}
+.card-chip{width:34px;height:26px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:4px;margin-bottom:16px;display:flex;align-items:center;justify-content:center}
+.card-chip-lines{display:flex;flex-direction:column;gap:3px}
+.card-chip-line{width:20px;height:2px;background:rgba(0,0,0,.3);border-radius:1px}
+.card-number-preview{font-size:17px;font-weight:700;letter-spacing:3px;margin-bottom:14px;min-height:22px}
+.card-bottom-row{display:flex;justify-content:space-between;align-items:flex-end}
+.card-field-lbl{font-size:9px;opacity:.6;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px}
+.card-field-val{font-size:13px;font-weight:700;letter-spacing:1px;min-height:18px}
+.card-brand-icon{position:absolute;top:18px;right:18px;font-size:24px;font-weight:800;letter-spacing:-1px}
+.pay-secure{display:flex;align-items:center;justify-content:center;gap:16px;padding:10px;background:var(--gray-bg);border-radius:10px;margin-bottom:18px}
+.pay-secure-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gray-text);font-weight:600}
+
+/* ═══ BUTTONS ═══ */
+.btn{width:100%;padding:15px;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;margin-bottom:8px;letter-spacing:.2px}
+.btn-primary{background:var(--orange);color:#fff}
+.btn-primary:hover{background:#E55400}
+.btn-primary:disabled{background:var(--gray-mid);cursor:not-allowed}
+.btn-secondary{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+.btn-secondary:hover{background:var(--navy);color:#fff}
+.btn-ghost{background:transparent;color:var(--gray-text);font-weight:500}
+.btn-wa{background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-wa:hover{background:#1ea952}
+
+/* ═══ SUCCESS ═══ */
+.success-ring{width:72px;height:72px;border-radius:50%;background:#DCFCE7;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:34px}
+.poliza-chip{text-align:center;font-size:19px;font-weight:900;color:var(--navy);background:var(--gray-bg);border-radius:12px;padding:14px;letter-spacing:1.5px;margin:14px 0;border:2px dashed var(--gray-mid)}
+
+/* ═══ WHATSAPP CHAT ═══ */
+.wa-chat-wrap{background:#ECE5DD;border-radius:16px;overflow:hidden;margin-top:20px;box-shadow:0 2px 12px rgba(0,0,0,.1)}
+.wa-chat-header{background:#075E54;display:flex;align-items:center;gap:10px;padding:10px 14px}
+.wa-avatar-circle{width:36px;height:36px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0}
+.wa-contact-name{font-size:14px;font-weight:700;color:#fff}
+.wa-contact-sub{font-size:11px;color:rgba(255,255,255,.65)}
+.wa-chat-body{padding:12px 12px 6px;display:flex;flex-direction:column;align-items:flex-start;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.wa-bubble{background:#fff;border-radius:0 10px 10px 10px;padding:12px 14px;max-width:88%;position:relative;box-shadow:0 1px 2px rgba(0,0,0,.13)}
+.wa-bubble::before{content:'';position:absolute;top:0;left:-8px;border-width:0 8px 8px 0;border-style:solid;border-color:transparent #fff transparent transparent}
+.wa-bubble-title{font-size:14px;font-weight:800;color:#075E54;margin-bottom:8px}
+.wa-bubble-line{display:flex;align-items:baseline;gap:6px;font-size:13px;color:#1a1a1a;margin-bottom:5px;line-height:1.3}
+.wa-bubble-line span:first-child{font-size:14px;flex-shrink:0}
+.wa-bubble-val{font-weight:700}
+.wa-bubble-actions{display:flex;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid #E5E5E5}
+.wa-bubble-action{font-size:13px;font-weight:700;color:#25D366}
+.wa-bubble-time{font-size:10px;color:#8696A0;text-align:right;margin-top:6px;display:flex;align-items:center;justify-content:flex-end;gap:4px}
+
+/* ═══ POLICY CARD ═══ */
+.pol-card{background:linear-gradient(135deg,var(--navy) 0%,#003399 100%);border-radius:20px;padding:20px;color:#fff;margin-bottom:20px}
+.pol-num{font-size:17px;font-weight:900;letter-spacing:1px;margin-bottom:6px}
+.pol-dest{font-size:13px;opacity:.85;margin-bottom:3px}
+.pol-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;margin-top:8px;letter-spacing:.3px}
+
+/* ═══ CROSS-SELL ═══ */
+.cs-card{border:2px solid var(--gray-mid);border-radius:16px;padding:16px;margin-bottom:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.cs-card:hover{border-color:#FDBA74}
+.cs-card.picked{border-color:var(--orange);background:#FFF7F2}
+.cs-top{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.cs-emoji{font-size:30px}
+.cs-title{font-size:15px;font-weight:800;color:var(--dark)}
+.cs-desc{font-size:13px;color:var(--gray-text);line-height:1.5;margin-bottom:12px}
+.cs-foot{display:flex;align-items:center;justify-content:space-between}
+.cs-price{font-size:18px;font-weight:900;color:var(--navy)}
+.cs-price span{font-size:12px;font-weight:400;color:var(--gray-text)}
+.cs-btn{font-size:13px;font-weight:700;color:var(--orange)}
+.cs-card.picked .cs-btn{color:var(--success)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+.badge-o{background:#FFF0E6;color:var(--orange)}
+.badge-b{background:#EEF2FF;color:var(--navy)}
+
+/* ═══ FINAL ═══ */
+.prod-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px dashed var(--gray-mid)}
+.contact-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--gray-mid)}
+.contact-row:last-child{border-bottom:none}
+
+/* ═══ LOADING ═══ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center}
+.overlay.on{display:flex}
+.ld-card{background:#fff;border-radius:20px;padding:32px 28px;text-align:center;max-width:260px;width:90%}
+.spinner{width:44px;height:44px;border:4px solid var(--gray-mid);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld-txt{font-size:15px;font-weight:700;color:var(--dark)}
+.ld-sub{font-size:13px;color:var(--gray-text);margin-top:5px}
+
+/* ═══ MODAL ═══ */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+.modal-box{background:#fff;width:100%;max-width:520px;border-radius:24px 24px 0 0;padding:24px 20px;max-height:78vh;overflow-y:auto}
+.modal-ttl{font-size:17px;font-weight:800;color:var(--dark);margin-bottom:14px}
+.modal-p{font-size:13px;color:var(--gray-text);line-height:1.65;margin-bottom:10px}
+
+/* ══════════════════════════════════════════════════
+   DESKTOP — layout en dos columnas ≥ 768px
+══════════════════════════════════════════════════ */
+@media(min-width:768px){
+  body{background:#E0E3EA;display:flex;align-items:flex-start;justify-content:center;padding:0}
+
+  .app{
+    flex-direction:row;max-width:1080px;width:100%;min-height:100vh;
+    box-shadow:0 8px 60px rgba(0,0,0,.18);
+  }
+
+  /* ── Sidebar ── */
+  .sidebar{
+    width:var(--sidebar-w);flex-shrink:0;
+    background:var(--navy);
+    display:flex;flex-direction:column;
+    padding:0;min-height:100vh;
+    position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  .sb-logo-area{
+    padding:28px 24px 20px;
+    border-bottom:1px solid rgba(255,255,255,.1);
+  }
+  .sb-logo-area img{width:100%;max-width:180px;height:auto;display:block}
+  .sb-product-label{
+    color:rgba(255,255,255,.5);font-size:10px;
+    text-transform:uppercase;letter-spacing:1.5px;
+    margin-top:10px;font-weight:600;
+  }
+
+  .sb-section{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08)}
+
+  .sb-sec-title{
+    font-size:9px;font-weight:700;text-transform:uppercase;
+    letter-spacing:1.2px;color:rgba(255,255,255,.4);margin-bottom:12px;
+  }
+
+  /* Trip summary */
+  .sb-trip-item{
+    display:flex;align-items:flex-start;gap:10px;
+    margin-bottom:10px;
+  }
+  .sb-trip-item:last-child{margin-bottom:0}
+  .sb-trip-ico{font-size:14px;opacity:.8;flex-shrink:0;margin-top:1px}
+  .sb-trip-txt{font-size:13px;color:rgba(255,255,255,.85);line-height:1.3}
+  .sb-trip-txt strong{color:#fff;font-weight:700}
+
+  /* Steps list */
+  .sb-step-item{
+    display:flex;align-items:center;gap:10px;
+    padding:7px 0;font-size:13px;color:rgba(255,255,255,.45);
+    transition:color .2s;
+  }
+  .sb-step-item.done{color:rgba(255,255,255,.65)}
+  .sb-step-item.active{color:#fff;font-weight:700}
+  .sb-step-num{
+    width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.2);
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:700;flex-shrink:0;transition:all .2s;
+  }
+  .sb-step-item.done .sb-step-num{background:var(--orange);border-color:var(--orange);color:#fff}
+  .sb-step-item.active .sb-step-num{background:var(--white);border-color:var(--white);color:var(--navy)}
+
+  /* Total */
+  .sb-total-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    margin-top:6px;
+  }
+  .sb-total-label{font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px}
+  .sb-total-amount{font-size:28px;font-weight:900;color:var(--orange)}
+
+
+  /* ── Main panel ── */
+  .main-panel{
+    flex:1;display:flex;flex-direction:column;
+    background:#fff;min-height:100vh;
+  }
+
+  /* Hide mobile-only elements */
+  .mob-header{display:none}
+  .progress-wrap{display:none}
+  .step-bar{display:none}
+
+  /* Desktop top bar inside main panel */
+  .desk-topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 36px 0;flex-shrink:0;
+  }
+  .desk-step-indicator{
+    display:flex;align-items:center;gap:8px;
+  }
+  .desk-dot{width:8px;height:8px;border-radius:50%;background:var(--gray-mid);transition:all .3s;flex-shrink:0}
+  .desk-dot.active{width:24px;border-radius:4px;background:var(--navy)}
+  .desk-dot.done{background:var(--orange)}
+  .desk-step-lbl{font-size:12px;color:var(--gray-text);font-weight:600;letter-spacing:.3px;margin-left:8px}
+
+  /* Screens on desktop: fill main panel */
+  .screen.active{display:flex;flex:1;flex-direction:column}
+  .scr-body{padding:28px 36px;flex:1;overflow-y:auto}
+  .scr-foot{padding:20px 36px 32px;border-top:1px solid var(--gray-mid)}
+  .scr-body .ttl{font-size:26px}
+
+  /* Progress bar inside desktop topbar */
+  .desk-prog-wrap{height:2px;background:var(--gray-mid);flex-shrink:0;margin:12px 0 0}
+  .desk-prog-fill{height:100%;background:var(--orange);transition:width .4s ease}
+}
+
+@media(max-width:767px){
+  .sidebar{display:none}
+  .main-panel{display:contents} /* mobile: children flow directly */
+  .desk-topbar{display:none}
+  .desk-prog-wrap{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="overlay" id="loading">
+  <div class="ld-card">
+    <div class="spinner"></div>
+    <div class="ld-txt" id="ld-txt">Procesando...</div>
+    <div class="ld-sub" id="ld-sub">Por favor espera</div>
+  </div>
+</div>
+
+<!-- Terms modal -->
+<div class="modal" id="modal-terms">
+  <div class="modal-box">
+    <div class="modal-ttl">Términos y Condiciones</div>
+    <p class="modal-p">Este seguro es emitido por Grupo Universal C. por A. Número de autorización: GU-2026-0047.</p>
+    <p class="modal-p"><strong>Cobertura:</strong> La póliza cubre asistencia médica de emergencia, evacuación, repatriación, pérdida de equipaje y cancelación de viaje según los límites indicados en la cotización.</p>
+    <p class="modal-p"><strong>Exclusiones:</strong> No cubre condiciones preexistentes no declaradas, actos intencionales, deportes extremos sin cobertura adicional, ni países en lista restringida por normativa internacional.</p>
+    <p class="modal-p"><strong>Reclamos:</strong> Llamar a la línea de asistencia 24/7 dentro de las primeras 24 horas del incidente. La compañía resolverá dentro de 15 días hábiles.</p>
+    <p class="modal-p"><strong>Vigencia:</strong> Desde las 00:00 de la fecha de inicio hasta las 23:59 de la fecha de regreso. No aplica para viajes iniciados antes de la compra.</p>
+    <p class="modal-p"><strong>Privacidad:</strong> Sus datos personales se manejan según la Ley 172-13 de Protección de Datos de la República Dominicana.</p>
+    <button class="btn btn-primary" onclick="closeModal('modal-terms')" style="margin-top:8px">Entendido ✓</button>
+  </div>
+</div>
+
+<div id="qr-temp" style="position:fixed;left:-9999px;top:-9999px;visibility:hidden"></div>
+
+<div class="app">
+
+  <!-- ═══════════════ SIDEBAR (desktop only) ═══════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo-area">
+      <img src="logo-unit.svg" alt="UNIT">
+      <div class="sb-product-label">Seguro de Viaje Digital</div>
+    </div>
+
+    <!-- Trip summary (visible from paso 2) -->
+    <div class="sb-section" id="sb-summary" style="display:none">
+      <div class="sb-sec-title">Tu Viaje</div>
+      <div class="sb-trip-item">
+        <span class="sb-trip-ico">📍</span>
+        <div class="sb-trip-txt" id="sb-destino">—</div>
+      </div>
+      <div class="sb-trip-item">
+        <span class="sb-trip-ico">📅</span>
+        <div class="sb-trip-txt" id="sb-dates">—</div>
+      </div>
+      <div class="sb-trip-item">
+        <span class="sb-trip-ico">👥</span>
+        <div class="sb-trip-txt" id="sb-tvl">—</div>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="sb-section">
+      <div class="sb-sec-title">Progreso</div>
+      <div class="sb-step-item" id="sbs1"><div class="sb-step-num">1</div>Datos del Viaje</div>
+      <div class="sb-step-item" id="sbs2"><div class="sb-step-num">2</div>Cotización</div>
+      <div class="sb-step-item" id="sbs3"><div class="sb-step-num">3</div>Coberturas</div>
+      <div class="sb-step-item" id="sbs4"><div class="sb-step-num">4</div>Confirmación</div>
+      <div class="sb-step-item" id="sbs5"><div class="sb-step-num">5</div>Pago</div>
+      <div class="sb-step-item" id="sbs6"><div class="sb-step-num">6</div>Póliza enviada</div>
+      <div class="sb-step-item" id="sbs7"><div class="sb-step-num">7</div>Ver Póliza</div>
+      <div class="sb-step-item" id="sbs8"><div class="sb-step-num">8</div>Complementos</div>
+    </div>
+
+    <!-- Total (visible from paso 2) -->
+    <div class="sb-section" id="sb-total-sec" style="display:none">
+      <div class="sb-sec-title">Total</div>
+      <div class="sb-total-row">
+        <div class="sb-total-label">A pagar</div>
+        <div class="sb-total-amount" id="sb-total-amt">RD$0</div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ═══════════════ MAIN PANEL ═══════════════ -->
+  <div class="main-panel">
+
+    <!-- Mobile header -->
+    <div class="mob-header">
+      <img src="logo-unit.svg" alt="UNIT">
+      <span class="mob-header-label">Seguro de Viaje</span>
+    </div>
+
+    <!-- Mobile progress -->
+    <div class="progress-wrap"><div class="progress-fill" id="prog" style="width:12%"></div></div>
+    <div class="step-bar">
+      <div class="dot active" id="d1"></div>
+      <div class="dot" id="d2"></div>
+      <div class="dot" id="d3"></div>
+      <div class="dot" id="d4"></div>
+      <div class="dot" id="d5"></div>
+      <div class="dot" id="d6"></div>
+      <div class="dot" id="d7"></div>
+      <div class="dot" id="d8"></div>
+      <span class="step-lbl" id="step-lbl">Paso 1 de 8</span>
+    </div>
+
+    <!-- Desktop top bar -->
+    <div class="desk-topbar" id="desk-topbar">
+      <div class="desk-step-indicator" id="desk-dots">
+        <div class="desk-dot active" id="dd1"></div>
+        <div class="desk-dot" id="dd2"></div>
+        <div class="desk-dot" id="dd3"></div>
+        <div class="desk-dot" id="dd4"></div>
+        <div class="desk-dot" id="dd5"></div>
+        <div class="desk-dot" id="dd6"></div>
+        <div class="desk-dot" id="dd7"></div>
+        <div class="desk-dot" id="dd8"></div>
+        <span class="desk-step-lbl" id="desk-step-lbl">Paso 1 de 8</span>
+      </div>
+    </div>
+    <div class="desk-prog-wrap"><div class="desk-prog-fill" id="desk-prog" style="width:12%"></div></div>
+
+
+    <!-- ════════════════════════════════════════
+         PASO 1 — Datos del Viaje
+    ════════════════════════════════════════ -->
+    <div class="screen active" id="s1">
+      <div class="scr-body">
+        <div class="ttl">¿A dónde viajas?</div>
+        <div class="sub">Cuéntanos sobre tu viaje para cotizar al instante</div>
+
+        <div class="fld">
+          <label class="lbl">Destino</label>
+          <select class="inp" id="destino">
+            <option value="">Selecciona un destino...</option>
+            <optgroup label="🇺🇸 Estados Unidos">
+              <option value="miami">Miami, Florida</option>
+              <option value="nueva_york">Nueva York, NY</option>
+              <option value="orlando">Orlando, Florida</option>
+            </optgroup>
+            <optgroup label="🇲🇽 México">
+              <option value="cancun">Cancún, México</option>
+              <option value="mexico_city">Ciudad de México</option>
+            </optgroup>
+            <optgroup label="🇪🇸 España">
+              <option value="madrid">Madrid, España</option>
+              <option value="barcelona">Barcelona, España</option>
+            </optgroup>
+            <optgroup label="🇫🇷 Europa">
+              <option value="paris">París, Francia</option>
+              <option value="roma">Roma, Italia</option>
+            </optgroup>
+            <optgroup label="🌎 América Latina">
+              <option value="bogota">Bogotá, Colombia</option>
+              <option value="cartagena">Cartagena, Colombia</option>
+              <option value="panama">Ciudad de Panamá</option>
+              <option value="san_jose">San José, Costa Rica</option>
+              <option value="buenos_aires">Buenos Aires, Argentina</option>
+            </optgroup>
+            <optgroup label="🏝️ Caribe">
+              <option value="puerto_rico">San Juan, Puerto Rico</option>
+              <option value="aruba">Aruba</option>
+              <option value="cuba">La Habana, Cuba</option>
+            </optgroup>
+          </select>
+          <div class="err-msg" id="err-destino">Selecciona un destino válido</div>
+        </div>
+
+        <div class="fld">
+          <label class="lbl">Fechas del Viaje</label>
+          <div class="date-row">
+            <div>
+              <div class="date-sub">Salida</div>
+              <input type="date" class="inp" id="f-salida">
+            </div>
+            <div>
+              <div class="date-sub">Regreso</div>
+              <input type="date" class="inp" id="f-regreso">
+            </div>
+          </div>
+          <div class="err-msg" id="err-fecha">La fecha de regreso debe ser después de la salida</div>
+        </div>
+
+        <div class="fld">
+          <label class="lbl">Viajeros</label>
+          <div class="qty-row">
+            <div><div class="qty-name">Adultos</div><div class="qty-note">18 años o más</div></div>
+            <div class="qty-ctrl">
+              <button class="q-btn" onclick="qty('a',-1)" id="btn-am" disabled>−</button>
+              <span class="q-val" id="n-a">1</span>
+              <button class="q-btn" onclick="qty('a',1)">+</button>
+            </div>
+          </div>
+          <div class="qty-row">
+            <div><div class="qty-name">Niños</div><div class="qty-note">0 a 17 años</div></div>
+            <div class="qty-ctrl">
+              <button class="q-btn" onclick="qty('n',-1)" id="btn-nm" disabled>−</button>
+              <span class="q-val" id="n-n">0</span>
+              <button class="q-btn" onclick="qty('n',1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="note">🔒 Sin datos de pago en este paso — solo cotizamos.</div>
+      </div>
+      <div class="scr-foot">
+        <button class="btn btn-primary" onclick="irPaso2()">Ver mi cotización →</button>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         PASO 2 — Cotización
+    ════════════════════════════════════════ -->
+    <div class="screen" id="s2">
+      <div class="scr-body">
+        <div class="ttl">Tu Cotización</div>
+        <div class="sub">Prima calculada automáticamente</div>
+
+        <div class="sum-card">
+          <div class="sum-dest" id="q-dest">—</div>
+          <div class="sum-meta" id="q-dates">—</div>
+          <div class="sum-meta" id="q-tvl">—</div>
+        </div>
+
+        <div class="sec-hdr">Cobertura estándar incluida</div>
+        <div class="p-row"><span class="p-lbl">🏥 Asistencia Médica</span><span class="p-amt">hasta RD$100,000</span></div>
+        <div class="p-row"><span class="p-lbl">✈️ Repatriación Médica</span><span class="p-amt">hasta RD$50,000</span></div>
+        <div class="p-row"><span class="p-lbl">🧳 Pérdida de Equipaje</span><span class="p-amt">hasta RD$5,000</span></div>
+        <div class="p-row" style="border:none"><span class="p-lbl">❌ Cancelación de Viaje</span><span class="p-amt">hasta RD$2,000</span></div>
+
+        <div class="hr"></div>
+        <div class="sec-hdr">Desglose</div>
+        <div class="p-row" id="q-row-a">
+          <span class="p-lbl" id="q-lbl-a">Adultos</span>
+          <span class="p-amt" id="q-amt-a">—</span>
+        </div>
+        <div class="p-row" id="q-row-n" style="display:none">
+          <span class="p-lbl" id="q-lbl-n">Niños</span>
+          <span class="p-amt" id="q-amt-n">—</span>
+        </div>
+
+        <div class="total-bar">
+          <span class="total-lbl">TOTAL</span>
+          <span class="total-amt" id="q-total">—</span>
+        </div>
+        <div class="timer-badge">⏱️ Cotización válida por <strong id="countdown" style="margin:0 4px">30:00</strong></div>
+      </div>
+      <div class="scr-foot">
+        <button class="btn btn-primary" onclick="go(3)">Continuar con esta compra →</button>
+        <button class="btn btn-ghost" onclick="go(1)">← Cambiar datos</button>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         PASO 3 — Coberturas
+    ════════════════════════════════════════ -->
+    <div class="screen" id="s3">
+      <div class="scr-body">
+        <div class="ttl">Tus Coberturas</div>
+        <div class="sub" id="cov-sub">Ajustadas automáticamente por tipo de viajero</div>
+
+        <div class="cov-sec">
+          <div class="cov-hdr"><span>🧑‍🤝‍🧑</span><span id="cov-a-hdr">Adultos (1) — Cobertura Completa</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm">Asistencia Médica de Emergencia</span><span class="cov-am">RD$100,000</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm">Repatriación Médica</span><span class="cov-am">RD$50,000</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm">Pérdida de Equipaje</span><span class="cov-am">RD$5,000</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm">Cancelación de Viaje</span><span class="cov-am">RD$2,000</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm">Demoras de Transporte</span><span class="cov-am">RD$500</span></div>
+        </div>
+
+        <div class="cov-sec" id="cov-kids" style="display:none">
+          <div class="cov-hdr kids"><span>👧</span><span id="cov-n-hdr">Niños (1) — Cobertura Especial Pediátrica</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm">Asistencia Médica Pediátrica</span><span class="cov-am">RD$50,000</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm">Repatriación</span><span class="cov-am">RD$25,000</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm">Pérdida de Equipaje</span><span class="cov-am">RD$3,000</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm">Cancelación de Viaje</span><span class="cov-am">RD$1,000</span></div>
+        </div>
+
+        <div class="note">ℹ️ Coberturas estándar incluidas. Límites máximos por viajero.</div>
+      </div>
+      <div class="scr-foot">
+        <button class="btn btn-primary" onclick="go(4)">Confirmar coberturas →</button>
+        <button class="btn btn-ghost" onclick="go(2)">← Atrás</button>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         PASO 4 — Confirmación
+    ════════════════════════════════════════ -->
+    <div class="screen" id="s4">
+      <div class="scr-body">
+        <div class="ttl">Confirmar Compra</div>
+        <div class="sub">Un paso más y tu póliza estará lista</div>
+
+        <div class="cf-row">
+          <span class="cf-ico">📍</span>
+          <div><div class="cf-lbl">Destino</div><div class="cf-val" id="cf-dest">—</div></div>
+        </div>
+        <div class="cf-row">
+          <span class="cf-ico">📅</span>
+          <div><div class="cf-lbl">Fechas</div><div class="cf-val" id="cf-dates">—</div></div>
+        </div>
+        <div class="cf-row">
+          <span class="cf-ico">👥</span>
+          <div><div class="cf-lbl">Viajeros</div><div class="cf-val" id="cf-tvl">—</div></div>
+        </div>
+        <div class="cf-row">
+          <span class="cf-ico">🛡️</span>
+          <div><div class="cf-lbl">Cobertura</div><div class="cf-val">Estándar (médica, equipaje, cancelación)</div></div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="fld">
+          <label class="lbl">💬 Tu número de WhatsApp</label>
+          <div class="phone-row">
+            <div class="phone-pfx">🇩🇴 +1</div>
+            <input type="tel" class="inp" style="flex:1" id="wa-num" placeholder="809-555-1234" maxlength="12" oninput="this.value=this.value.replace(/[^0-9-]/g,'')">
+          </div>
+          <div style="font-size:12px;color:var(--gray-text);margin-top:6px">Recibirás tu póliza en PDF por WhatsApp al instante</div>
+          <div class="err-msg" id="err-wa">Ingresa un número válido (mínimo 7 dígitos)</div>
+        </div>
+
+        <div class="total-bar">
+          <span class="total-lbl">TOTAL A PAGAR</span>
+          <span class="total-amt" id="cf-total">—</span>
+        </div>
+
+        <div class="chk-row">
+          <input type="checkbox" id="chk-terms" onchange="checkBuyBtn()">
+          <label class="chk-lbl" for="chk-terms">
+            Acepto los <a href="#" onclick="openModal('modal-terms');return false">Términos y Condiciones</a> y la Política de Privacidad de UNIT / Grupo Universal
+          </label>
+        </div>
+      </div>
+      <div class="scr-foot">
+        <button class="btn btn-primary" id="buy-btn" disabled onclick="irAPago()">Ir a Pagar →</button>
+        <button class="btn btn-ghost" onclick="go(3)">← Atrás</button>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         PASO 5 — Pago con Tarjeta
+    ════════════════════════════════════════ -->
+    <div class="screen" id="s5">
+      <div class="scr-body">
+        <div class="ttl">Pago Seguro</div>
+        <div class="sub">Total: <strong id="pago-total-lbl" style="color:var(--navy)">—</strong></div>
+
+        <!-- Tarjeta visual -->
+        <div class="card-preview">
+          <div class="card-brand-icon" id="card-brand-icon">💳</div>
+          <div class="card-chip"><div class="card-chip-lines"><div class="card-chip-line"></div><div class="card-chip-line"></div><div class="card-chip-line"></div></div></div>
+          <div class="card-number-preview" id="card-num-preview">•••• &nbsp;•••• &nbsp;•••• &nbsp;••••</div>
+          <div class="card-bottom-row">
+            <div><div class="card-field-lbl">Nombre</div><div class="card-field-val" id="card-name-preview">NOMBRE APELLIDO</div></div>
+            <div><div class="card-field-lbl">Vence</div><div class="card-field-val" id="card-exp-preview">MM/AA</div></div>
+          </div>
+        </div>
+
+        <!-- Tipo -->
+        <div class="fld">
+          <label class="lbl">Tipo de tarjeta</label>
+          <div style="display:flex;gap:10px">
+            <div id="tab-credit" onclick="setCardType('credito')" style="flex:1;padding:10px;border:2px solid var(--navy);border-radius:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;background:var(--navy);color:#fff;transition:all .15s">Crédito</div>
+            <div id="tab-debit" onclick="setCardType('debito')" style="flex:1;padding:10px;border:2px solid var(--gray-mid);border-radius:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:var(--gray-text);transition:all .15s">Débito</div>
+          </div>
+        </div>
+
+        <div class="fld">
+          <label class="lbl">Número de tarjeta</label>
+          <input type="tel" class="inp" id="card-num" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)" autocomplete="cc-number">
+          <div class="err-msg" id="err-card-num">Número de tarjeta inválido (16 dígitos)</div>
+        </div>
+
+        <div class="fld">
+          <label class="lbl">Nombre en la tarjeta</label>
+          <input type="text" class="inp" id="card-name" placeholder="Ej: JUAN PÉREZ" oninput="syncCardName(this)" autocomplete="cc-name" style="text-transform:uppercase">
+          <div class="err-msg" id="err-card-name">Ingresa el nombre tal como aparece en la tarjeta</div>
+        </div>
+
+        <div class="date-row" style="margin-bottom:20px">
+          <div>
+            <label class="lbl">Vence</label>
+            <input type="tel" class="inp" id="card-exp" placeholder="MM/AA" maxlength="5" oninput="fmtExp(this)" autocomplete="cc-exp">
+            <div class="err-msg" id="err-card-exp">Fecha inválida</div>
+          </div>
+          <div>
+            <label class="lbl">CVV</label>
+            <div style="position:relative">
+              <input type="tel" class="inp" id="card-cvv" placeholder="123" maxlength="4" autocomplete="cc-csc">
+              <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.4">🔒</span>
+            </div>
+            <div class="err-msg" id="err-card-cvv">CVV inválido</div>
+          </div>
+        </div>
+
+        <div class="pay-secure">
+          <div class="pay-secure-item">🔒 Pago 100% seguro</div>
+          <div class="pay-secure-item">✅ Datos encriptados</div>
+        </div>
+      </div>
+      <div class="scr-foot">
+        <button class="btn btn-primary" onclick="procesarPago()">🔒 Pagar <span id="pagar-amt">—</span></button>
+        <button class="btn btn-ghost" onclick="go(4)">← Atrás</button>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         PASO 6 — Confirmación WhatsApp
+    ════════════════════════════════════════ -->
+    <div class="screen" id="s6">
+      <div class="scr-body" style="padding-top:28px">
+
+        <!-- Header de éxito -->
+        <div style="text-align:center;margin-bottom:20px">
+          <div class="success-ring">✅</div>
+          <div class="ttl">¡Compra confirmada!</div>
+          <div class="sub">Tu póliza está activa y fue enviada a tu WhatsApp</div>
+        </div>
+
+        <!-- Número de póliza destacado -->
+        <div style="background:var(--navy);border-radius:16px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.5);margin-bottom:4px">Número de póliza</div>
+            <div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:1px" id="pol-chip">SVT-2026-0000000</div>
+          </div>
+          <div style="background:var(--orange);border-radius:10px;padding:6px 12px;font-size:11px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.5px">Activa</div>
+        </div>
+
+        <!-- Datos rápidos -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+          <div style="background:var(--gray-bg);border-radius:12px;padding:12px 14px">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gray-text);margin-bottom:4px">Enviado a</div>
+            <div style="font-size:13px;font-weight:700;color:var(--dark)" id="wa-sent">—</div>
+          </div>
+          <div style="background:var(--gray-bg);border-radius:12px;padding:12px 14px">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gray-text);margin-bottom:4px">Activa hasta</div>
+            <div style="font-size:13px;font-weight:700;color:var(--dark)" id="active-til">—</div>
+          </div>
+        </div>
+
+        <!-- Preview WhatsApp -->
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gray-text);margin-bottom:8px">Vista previa del mensaje</div>
+        <div class="wa-chat-wrap">
+          <div class="wa-chat-header">
+            <div class="wa-avatar-circle">U</div>
+            <div>
+              <div class="wa-contact-name">UNIT Seguros</div>
+              <div class="wa-contact-sub">en línea</div>
+            </div>
+          </div>
+          <div class="wa-chat-body">
+            <div class="wa-bubble">
+              <div class="wa-bubble-title">¡Bienvenido a UNIT! 🛡️</div>
+              <div class="wa-bubble-line"><span>📋</span><span>Póliza: <span class="wa-bubble-val" id="wa-pnum">—</span></span></div>
+              <div class="wa-bubble-line"><span>🗺️</span><span>Destino: <span class="wa-bubble-val" id="wa-pdest">—</span></span></div>
+              <div class="wa-bubble-line"><span>📅</span><span>Vigencia: <span class="wa-bubble-val" id="wa-pdates">—</span></span></div>
+              <div class="wa-bubble-line"><span>🏥</span><span>Cobertura: hasta <span class="wa-bubble-val">RD$100,000</span></span></div>
+              <div class="wa-bubble-actions">
+                <span class="wa-bubble-action">▶ Ver Póliza</span>
+                <span class="wa-bubble-action">▶ Consultar Coberturas</span>
+              </div>
+              <div class="wa-bubble-time">
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="#53BDEB"><path d="M1 5l3 3 5-7M6 8l2-2m2-4l-5 7"/><path d="M9 1l-5 7"/></svg>
+                Ahora
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="scr-foot">
+        <button class="btn btn-wa" style="display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.117 1.532 5.845L0 24l6.322-1.508A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6c-1.96 0-3.789-.526-5.364-1.44L3.6 21.2l1.06-3.92A9.57 9.57 0 012.4 12c0-5.302 4.298-9.6 9.6-9.6s9.6 4.298 9.6 9.6-4.298 9.6-9.6 9.6z"/></svg>
+          Abrir en WhatsApp
+        </button>
+        <button class="btn btn-secondary" onclick="go(7)">Ver mis coberturas →</button>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         PASO 7 — Mi Póliza
+    ════════════════════════════════════════ -->
+    <div class="screen" id="s7">
+      <div class="scr-body">
+        <div class="pol-card">
+          <div class="pol-num" id="p6-num">SVT-2026-0000000</div>
+          <div class="pol-dest" id="p6-dest">—</div>
+          <div class="pol-dest" id="p6-tvl">—</div>
+          <div class="pol-badge">✅ &nbsp;ACTIVA</div>
+        </div>
+
+        <div class="sec-hdr">Mis Coberturas</div>
+
+        <div class="cov-sec">
+          <div class="cov-hdr"><span>🏥</span><span>Asistencia Médica</span><span style="margin-left:auto;font-size:12px">RD$100,000</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm" style="color:var(--gray-text)">Emergencias, evacuación, urgencias dentales</span></div>
+        </div>
+        <div class="cov-sec">
+          <div class="cov-hdr"><span>✈️</span><span>Repatriación Médica</span><span style="margin-left:auto;font-size:12px">RD$50,000</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm" style="color:var(--gray-text)">Traslado médico al país de origen si es necesario</span></div>
+        </div>
+        <div class="cov-sec">
+          <div class="cov-hdr"><span>🧳</span><span>Pérdida de Equipaje</span><span style="margin-left:auto;font-size:12px">RD$5,000</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm" style="color:var(--gray-text)">Pérdida, robo o daño documentado de maletas</span></div>
+        </div>
+        <div class="cov-sec">
+          <div class="cov-hdr"><span>❌</span><span>Cancelación de Viaje</span><span style="margin-left:auto;font-size:12px">RD$2,000</span></div>
+          <div class="cov-item"><span class="cov-ck">✓</span><span class="cov-nm" style="color:var(--gray-text)">Enfermedad, emergencia familiar, fuerza mayor</span></div>
+        </div>
+
+        <div style="padding:14px 16px;background:var(--gray-bg);border-radius:14px;margin-top:8px">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-text);margin-bottom:4px">Asistencia 24/7</div>
+          <div style="font-size:24px;font-weight:900;color:var(--navy)">1-800-UNIT-DO</div>
+          <div style="font-size:12px;color:var(--gray-text);margin-top:2px">Disponible desde cualquier país del mundo</div>
+        </div>
+      </div>
+      <div class="scr-foot">
+        <button class="btn btn-secondary" onclick="downloadPoliza()">📄 Descargar Póliza PDF</button>
+        <button class="btn btn-primary" onclick="go(8)">¿Quieres más cobertura? →</button>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         PASO 8 — Cross-Sell
+    ════════════════════════════════════════ -->
+    <div class="screen" id="s8">
+      <div class="scr-body">
+        <div class="ttl">Asegura tu viaje completo</div>
+        <div class="sub" id="cs-ctx">Complementa tu cobertura:</div>
+
+        <div class="cs-card" id="cs1" onclick="toggleCS(1)">
+          <div class="cs-top">
+            <span class="cs-emoji">🧳</span>
+            <div><div class="cs-title">Equipaje Premium</div><div class="badge badge-o">Más popular</div></div>
+          </div>
+          <div class="cs-desc">Protege tus maletas hasta RD$10,000 contra pérdida total, robo y daños en tránsito.</div>
+          <div class="cs-foot">
+            <span class="cs-price">+RD$450 <span>· 7 días</span></span>
+            <span class="cs-btn" id="cs-btn1">+ Agregar</span>
+          </div>
+        </div>
+
+        <div class="cs-card" id="cs2" onclick="toggleCS(2)">
+          <div class="cs-top">
+            <span class="cs-emoji">🏥</span>
+            <div><div class="cs-title">Salud Complementaria</div><div class="badge badge-b">Para familias</div></div>
+          </div>
+          <div class="cs-desc">Consultas médicas, medicamentos y atención pediátrica en destino.</div>
+          <div class="cs-foot">
+            <span class="cs-price">+RD$680 <span>· 7 días</span></span>
+            <span class="cs-btn" id="cs-btn2">+ Agregar</span>
+          </div>
+        </div>
+
+        <div id="cs-sum" style="display:none">
+          <div class="hr"></div>
+          <div class="sec-hdr">Resumen</div>
+          <div class="p-row"><span class="p-lbl">Seguro de Viaje Base</span><span class="p-amt" id="cs-base-lbl">—</span></div>
+          <div class="p-row" id="cs-row1" style="display:none"><span class="p-lbl">+ Equipaje Premium</span><span class="p-amt">RD$450</span></div>
+          <div class="p-row" id="cs-row2" style="display:none"><span class="p-lbl">+ Salud Complementaria</span><span class="p-amt">RD$680</span></div>
+          <div class="total-bar" style="margin-top:12px"><span class="total-lbl">NUEVO TOTAL</span><span class="total-amt" id="cs-new-tot">—</span></div>
+          <div class="chk-row">
+            <input type="checkbox" id="chk-cs-terms" checked>
+            <label class="chk-lbl" for="chk-cs-terms">Acepto los términos de las coberturas adicionales</label>
+          </div>
+        </div>
+      </div>
+      <div class="scr-foot">
+        <button class="btn btn-primary" id="cs-buy-btn" onclick="go(9)">Finalizar →</button>
+        <button class="btn btn-ghost" onclick="go(9)">Finalizar sin agregar</button>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         PASO 9 — Confirmación Final
+    ════════════════════════════════════════ -->
+    <div class="screen" id="s9">
+      <div class="scr-body" style="text-align:center;padding-top:36px">
+        <div class="success-ring">🎉</div>
+        <div class="ttl">¡Todo listo para viajar!</div>
+        <div class="sub">Tu protección está completa</div>
+
+        <div style="text-align:left;margin-top:20px">
+          <div class="sec-hdr">Lo que contrataste</div>
+          <div class="prod-row">
+            <div><div style="font-size:14px;font-weight:700">✓ Seguro de Viaje Base</div><div style="font-size:12px;color:var(--gray-text)" id="f-dest-line">—</div></div>
+            <div style="font-size:15px;font-weight:800;color:var(--navy)" id="f-base">—</div>
+          </div>
+          <div class="prod-row" id="f-extra1" style="display:none">
+            <div><div style="font-size:14px;font-weight:700">✓ Equipaje Premium</div><div style="font-size:12px;color:var(--gray-text)">Añadido a tu póliza</div></div>
+            <div style="font-size:15px;font-weight:800;color:var(--navy)">RD$450</div>
+          </div>
+          <div class="prod-row" id="f-extra2" style="display:none">
+            <div><div style="font-size:14px;font-weight:700">✓ Salud Complementaria</div><div style="font-size:12px;color:var(--gray-text)">Añadido a tu póliza</div></div>
+            <div style="font-size:15px;font-weight:800;color:var(--navy)">RD$680</div>
+          </div>
+          <div class="total-bar" style="margin-top:14px">
+            <span class="total-lbl">TOTAL PAGADO</span>
+            <span class="total-amt" id="f-total">—</span>
+          </div>
+
+          <div style="margin-top:16px;padding:16px;background:#DCFCE7;border-radius:14px;text-align:center">
+            <div style="font-size:13px;font-weight:700;color:var(--success)">📱 Póliza enviada a WhatsApp</div>
+            <div style="font-size:12px;color:#374151;margin-top:3px" id="f-wa">—</div>
+          </div>
+
+          <div style="margin-top:14px;padding:16px;background:var(--gray-bg);border-radius:14px">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-text);margin-bottom:10px">¿Necesitas ayuda?</div>
+            <div class="contact-row">
+              <span style="font-size:22px">☎️</span>
+              <div><div style="font-size:13px;font-weight:700">1-800-UNIT-DO</div><div style="font-size:12px;color:var(--gray-text)">Asistencia 24/7 desde cualquier país</div></div>
+            </div>
+            <div class="contact-row">
+              <span style="font-size:22px">📧</span>
+              <div><div style="font-size:13px;font-weight:700">soporte@unit.com.do</div><div style="font-size:12px;color:var(--gray-text)">Respuesta en menos de 2 horas</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="scr-foot">
+        <button class="btn btn-secondary" onclick="downloadPoliza()">📄 Descargar Pólizas PDF</button>
+        <button class="btn btn-ghost" onclick="resetAll()">← Volver al inicio</button>
+      </div>
+    </div>
+
+  </div><!-- /main-panel -->
+</div><!-- /app -->
+
+<script>
+// ─── Estado ───
+const S={adultos:1,ninos:0,destino:'',destinoLabel:'',salida:'',regreso:'',dias:0,prima:0,primaA:0,primaK:0,whatsapp:'',poliza:'',cs1:false,cs2:false,step:1};
+const DEST={miami:{label:'Miami, Florida',factor:1.5},nueva_york:{label:'Nueva York, NY',factor:1.5},orlando:{label:'Orlando, Florida',factor:1.5},cancun:{label:'Cancún, México',factor:1.1},mexico_city:{label:'Ciudad de México',factor:1.0},madrid:{label:'Madrid, España',factor:1.8},barcelona:{label:'Barcelona, España',factor:1.8},paris:{label:'París, Francia',factor:1.8},roma:{label:'Roma, Italia',factor:1.8},bogota:{label:'Bogotá, Colombia',factor:1.0},cartagena:{label:'Cartagena, Colombia',factor:1.0},panama:{label:'Ciudad de Panamá',factor:1.0},san_jose:{label:'San José, Costa Rica',factor:1.0},buenos_aires:{label:'Buenos Aires, Argentina',factor:1.1},puerto_rico:{label:'San Juan, Puerto Rico',factor:1.0},aruba:{label:'Aruba',factor:1.0},cuba:{label:'La Habana, Cuba',factor:1.0}};
+const RATE_A=178,RATE_K=89;
+const STEP_LABELS=['','Datos del Viaje','Cotización','Coberturas','Confirmación','Pago','Póliza enviada','Ver Póliza','Complementos'];
+
+// ─── Navegación ───
+let timer;
+function go(n){
+  S.step=n;updateNav(n);updateSidebar(n);
+  const cur=document.querySelector('.screen.active');
+  if(!cur||cur.id==='s'+n){_show(n);return;}
+  cur.classList.add('leaving');
+  setTimeout(()=>{cur.classList.remove('active','leaving');_show(n);},170);
+}
+function _show(n){
+  const el=document.getElementById('s'+n);
+  el.classList.add('active');
+  window.scrollTo(0,0);
+}
+function updateNav(step){
+  const tot=8;
+  const pct=Math.round(step/tot*100)+'%';
+  const lbl='Paso '+step+' de '+tot;
+  // mobile
+  const prog=document.getElementById('prog');if(prog)prog.style.width=pct;
+  const stepLbl=document.getElementById('step-lbl');if(stepLbl)stepLbl.textContent=lbl;
+  // desktop
+  const dp=document.getElementById('desk-prog');if(dp)dp.style.width=pct;
+  const dl=document.getElementById('desk-step-lbl');if(dl)dl.textContent=lbl;
+  // dots
+  for(let i=1;i<=tot;i++){
+    const cls='dot'+(i===step?' active':i<step?' done':'');
+    const d=document.getElementById('d'+i);if(d)d.className=cls;
+    const dd=document.getElementById('dd'+i);if(dd)dd.className='desk-dot'+(i===step?' active':i<step?' done':'');
+    const sb=document.getElementById('sbs'+i);
+    if(sb)sb.className='sb-step-item'+(i===step?' active':i<step?' done':'');
+  }
+}
+function updateSidebar(step){
+  // Summary visible desde paso 2
+  const sumEl=document.getElementById('sb-summary');
+  if(sumEl)sumEl.style.display=step>=2&&S.destinoLabel?'block':'none';
+  // Total visible desde paso 2
+  const totSec=document.getElementById('sb-total-sec');
+  if(totSec)totSec.style.display=step>=2&&S.prima>0?'block':'none';
+}
+
+// ─── Paso 1 ───
+function qty(tipo,delta){
+  if(tipo==='a'){S.adultos=Math.max(1,Math.min(9,S.adultos+delta));document.getElementById('n-a').textContent=S.adultos;document.getElementById('btn-am').disabled=S.adultos<=1;}
+  else{S.ninos=Math.max(0,Math.min(6,S.ninos+delta));document.getElementById('n-n').textContent=S.ninos;document.getElementById('btn-nm').disabled=S.ninos<=0;}
+}
+function irPaso2(){
+  const dest=document.getElementById('destino').value;
+  const sal=document.getElementById('f-salida').value;
+  const reg=document.getElementById('f-regreso').value;
+  let ok=true;
+  if(!dest){show('err-destino');ok=false;}else hide('err-destino');
+  if(!sal||!reg){show('err-fecha','Las fechas son obligatorias');ok=false;}
+  else{const d=diffDays(sal,reg);if(d<=0){show('err-fecha','La fecha de regreso debe ser posterior a la salida');ok=false;}else if(d>180){show('err-fecha','Máximo 180 días de cobertura');ok=false;}else{hide('err-fecha');S.dias=d;}}
+  if(!ok)return;
+  S.destino=dest;S.destinoLabel=DEST[dest]?.label||dest;S.salida=sal;S.regreso=reg;
+  const factor=DEST[dest]?.factor||1.0;
+  S.primaA=Math.round(RATE_A*S.dias*factor)*S.adultos;
+  S.primaK=Math.round(RATE_K*S.dias*factor)*S.ninos;
+  S.prima=S.primaA+S.primaK;
+  const fechaLbl=fmtShort(sal)+' – '+fmtShort(reg)+' '+sal.substring(0,4);
+  const diasLbl=S.dias+' día'+(S.dias>1?'s':'');
+  const tvlLbl=S.adultos+' Adulto'+(S.adultos>1?'s':'')+(S.ninos>0?', '+S.ninos+' Niño'+(S.ninos>1?'s':''):'');
+  // Paso 2
+  set('q-dest',S.destinoLabel);set('q-dates',fechaLbl+' · '+diasLbl);set('q-tvl',tvlLbl);
+  set('q-lbl-a','Adultos ('+S.adultos+' × '+diasLbl+')');set('q-amt-a','RD$'+fmtN(S.primaA));
+  if(S.ninos>0){show2('q-row-n');set('q-lbl-n','Niños ('+S.ninos+' × '+diasLbl+')');set('q-amt-n','RD$'+fmtN(S.primaK));}else hide2('q-row-n');
+  set('q-total','RD$'+fmtN(S.prima));
+  // Paso 3
+  set('cov-sub',S.destinoLabel+' · '+diasLbl+' — ajustadas automáticamente');
+  set('cov-a-hdr','Adultos ('+S.adultos+') — Cobertura Completa');
+  if(S.ninos>0){show2('cov-kids');set('cov-n-hdr','Niños ('+S.ninos+') — Cobertura Especial Pediátrica');}else hide2('cov-kids');
+  // Paso 4
+  set('cf-dest',S.destinoLabel);set('cf-dates',fechaLbl+' ('+diasLbl+')');set('cf-tvl',tvlLbl);set('cf-total','RD$'+fmtN(S.prima));
+  // Cross-sell
+  set('cs-ctx',S.ninos>0?'Viajas a '+S.destinoLabel.split(',')[0]+' con niños — te recomendamos:':'Complementa tu cobertura para '+S.destinoLabel.split(',')[0]+':');
+  set('cs-base-lbl','RD$'+fmtN(S.prima));
+  // Final
+  set('f-dest-line',S.destinoLabel+' · '+diasLbl);set('f-base','RD$'+fmtN(S.prima));
+  // Sidebar
+  set('sb-destino',S.destinoLabel);set('sb-dates',fechaLbl+' ('+diasLbl+')');set('sb-tvl',tvlLbl);set('sb-total-amt','RD$'+fmtN(S.prima));
+  // Countdown
+  if(timer)clearInterval(timer);let secs=30*60;tick(secs);
+  timer=setInterval(()=>{secs--;if(secs<=0)clearInterval(timer);tick(secs);},1000);
+  go(2);
+}
+function tick(s){const el=document.getElementById('countdown');if(el)el.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+
+// ─── Paso 4 ───
+function checkBuyBtn(){document.getElementById('buy-btn').disabled=!document.getElementById('chk-terms').checked;}
+function irAPago(){
+  const wa=document.getElementById('wa-num').value.trim();
+  if(wa.replace(/[^0-9]/g,'').length<7){show('err-wa');document.getElementById('wa-num').classList.add('error');return;}
+  hide('err-wa');document.getElementById('wa-num').classList.remove('error');
+  S.whatsapp='+1-'+wa;
+  const t='RD$'+fmtN(S.prima);set('pago-total-lbl',t);set('pagar-amt',t);
+  go(5);
+}
+
+// ─── Paso 5: Pago ───
+function setCardType(tipo){
+  const on='flex:1;padding:10px;border:2px solid var(--navy);border-radius:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;background:var(--navy);color:#fff;transition:all .15s';
+  const off='flex:1;padding:10px;border:2px solid var(--gray-mid);border-radius:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:var(--gray-text);transition:all .15s';
+  document.getElementById('tab-credit').style.cssText=tipo==='credito'?on:off;
+  document.getElementById('tab-debit').style.cssText=tipo==='debito'?on:off;
+}
+function fmtCard(el){
+  let v=el.value.replace(/\D/g,'').substring(0,16);
+  el.value=v.replace(/(.{4})/g,'$1 ').trim();
+  const p=v.padEnd(16,'•');
+  document.getElementById('card-num-preview').innerHTML=p.substring(0,4)+'&nbsp;&nbsp;'+p.substring(4,8)+'&nbsp;&nbsp;'+p.substring(8,12)+'&nbsp;&nbsp;'+p.substring(12,16);
+  const f=v[0];
+  set('card-brand-icon',f==='4'?'VISA':f==='5'?'MC':f==='3'?'AMEX':'💳');
+}
+function syncCardName(el){el.value=el.value.toUpperCase();set('card-name-preview',el.value||'NOMBRE APELLIDO');}
+function fmtExp(el){let v=el.value.replace(/\D/g,'');if(v.length>=2)v=v.substring(0,2)+'/'+v.substring(2,4);el.value=v;set('card-exp-preview',el.value||'MM/AA');}
+function procesarPago(){
+  const num=document.getElementById('card-num').value.replace(/\s/g,'');
+  const name=document.getElementById('card-name').value.trim();
+  const exp=document.getElementById('card-exp').value;
+  const cvv=document.getElementById('card-cvv').value.trim();
+  let ok=true;
+  if(num.length<16){show('err-card-num');ok=false;}else hide('err-card-num');
+  if(name.length<3){show('err-card-name');ok=false;}else hide('err-card-name');
+  if(!/^\d{2}\/\d{2}$/.test(exp)){show('err-card-exp');ok=false;}else hide('err-card-exp');
+  if(cvv.length<3){show('err-card-cvv');ok=false;}else hide('err-card-cvv');
+  if(!ok)return;
+  showLoad('Autorizando pago...','Procesando con tu banco...');
+  setTimeout(()=>{
+    set('ld-txt','Emitiendo póliza...');set('ld-sub','Enviando a WhatsApp...');
+    setTimeout(()=>{
+      S.poliza='SVT-'+new Date().getFullYear()+'-'+(1000000+Math.floor(Math.random()*8999999));
+      hideLoad();fillStep6();go(6);
+    },1400);
+  },1800);
+}
+function fillStep6(){
+  set('pol-chip',S.poliza);set('wa-sent',S.whatsapp);set('active-til',fmtLong(S.regreso));
+  set('wa-pnum',S.poliza);set('wa-pdest',S.destinoLabel);
+  set('wa-pdates',fmtShort(S.salida)+' – '+fmtShort(S.regreso)+' '+S.salida.substring(0,4));
+  set('p6-num',S.poliza);
+  set('p6-dest',S.destinoLabel+' · '+fmtShort(S.salida)+'-'+fmtShort(S.regreso)+' '+S.salida.substring(0,4));
+  set('p6-tvl',S.adultos+' Adulto'+(S.adultos>1?'s':'')+(S.ninos>0?', '+S.ninos+' Niño'+(S.ninos>1?'s':''):''));
+  set('f-wa',S.whatsapp);updateFinalTotal();
+}
+
+// ─── Paso 8: Cross-sell ───
+function toggleCS(id){
+  if(id===1){S.cs1=!S.cs1;document.getElementById('cs1').classList.toggle('picked',S.cs1);set('cs-btn1',S.cs1?'✓ Agregado':'+ Agregar');document.getElementById('cs-row1').style.display=S.cs1?'flex':'none';document.getElementById('f-extra1').style.display=S.cs1?'flex':'none';}
+  else{S.cs2=!S.cs2;document.getElementById('cs2').classList.toggle('picked',S.cs2);set('cs-btn2',S.cs2?'✓ Agregado':'+ Agregar');document.getElementById('cs-row2').style.display=S.cs2?'flex':'none';document.getElementById('f-extra2').style.display=S.cs2?'flex':'none';}
+  const extra=(S.cs1?450:0)+(S.cs2?680:0),total=S.prima+extra,any=S.cs1||S.cs2;
+  document.getElementById('cs-sum').style.display=any?'block':'none';
+  set('cs-new-tot','RD$'+fmtN(total));
+  document.getElementById('cs-buy-btn').textContent=any?'Finalizar (RD$'+fmtN(total)+') →':'Finalizar →';
+  updateFinalTotal();
+}
+function updateFinalTotal(){const e=(S.cs1?450:0)+(S.cs2?680:0);set('f-total','RD$'+fmtN(S.prima+e));set('sb-total-amt','RD$'+fmtN(S.prima+e));}
+
+// ─── Helpers ───
+const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MES_L=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function fmtShort(d){const x=new Date(d+'T00:00:00');return x.getDate()+' '+MES[x.getMonth()];}
+function fmtLong(d){const x=new Date(d+'T00:00:00');return x.getDate()+' de '+MES_L[x.getMonth()]+' '+x.getFullYear();}
+function fmtN(n){return n.toLocaleString('es-DO');}
+function diffDays(a,b){return Math.round((new Date(b)-new Date(a))/864e5);}
+function set(id,txt){const e=document.getElementById(id);if(e)e.textContent=txt;}
+function show(id,msg){const e=document.getElementById(id);if(e){e.style.display='block';if(msg)e.textContent=msg;}}
+function hide(id){const e=document.getElementById(id);if(e)e.style.display='none';}
+function show2(id){const e=document.getElementById(id);if(e)e.style.display='';}
+function hide2(id){const e=document.getElementById(id);if(e)e.style.display='none';}
+function showLoad(txt,sub){set('ld-txt',txt);set('ld-sub',sub);document.getElementById('loading').classList.add('on');}
+function hideLoad(){document.getElementById('loading').classList.remove('on');}
+function openModal(id){document.getElementById(id).classList.add('on');}
+function closeModal(id){document.getElementById(id).classList.remove('on');}
+function downloadPoliza(){
+  if(!window.jspdf||!window.QRCode){
+    showLoad('Sin conexión','Necesitas internet para generar el PDF');
+    setTimeout(hideLoad,2500);return;
+  }
+  showLoad('Generando tu póliza...','Preparando el PDF');
+  // 1. Generar QR
+  const qrDiv=document.getElementById('qr-temp');
+  qrDiv.innerHTML='';
+  const waUrl='https://wa.me/18095001234?text=Hola%2C+necesito+asistencia+de+viaje.+Mi+p%C3%B3liza+es+'+encodeURIComponent(S.poliza);
+  new QRCode(qrDiv,{text:waUrl,width:200,height:200,colorDark:'#002169',colorLight:'#ffffff'});
+  setTimeout(()=>{
+    const qrCanvas=qrDiv.querySelector('canvas');
+    const qrImg=qrCanvas?qrCanvas.toDataURL('image/png'):null;
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({unit:'mm',format:'a4'});
+    const W=210,M=18,CW=W-M*2;
+    let y=0;
+    // ── Header navy ──
+    doc.setFillColor(0,33,105);
+    doc.rect(0,0,W,38,'F');
+    doc.setFillColor(255,95,0);
+    doc.rect(0,34,W,4,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(26);doc.setFont('helvetica','bold');
+    doc.text('UNIT',M,23);
+    doc.setFontSize(10);doc.setFont('helvetica','normal');
+    doc.setTextColor(180,200,240);
+    doc.text('SEGURO DE VIAJE DIGITAL',M,31);
+    const hoy=new Date().toLocaleDateString('es-DO',{day:'numeric',month:'long',year:'numeric'});
+    doc.setFontSize(8);doc.setTextColor(160,180,220);
+    doc.text('Emitida: '+hoy,W-M,31,{align:'right'});
+    y=46;
+    // ── Número de póliza ──
+    doc.setFillColor(244,245,247);
+    doc.roundedRect(M,y,CW,24,3,3,'F');
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(107,114,128);
+    doc.text('NUMERO DE POLIZA',M+6,y+8);
+    doc.setFontSize(19);doc.setFont('helvetica','bold');doc.setTextColor(0,33,105);
+    doc.text(S.poliza||'SVT-2026-0000000',M+6,y+19);
+    doc.setFillColor(255,95,0);
+    doc.roundedRect(W-M-24,y+7,24,10,2,2,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
+    doc.text('ACTIVA',W-M-12,y+13.5,{align:'center'});
+    y+=32;
+    // ── Helper: section header ──
+    const secHdr=(title,yy)=>{
+      doc.setFillColor(0,33,105);doc.rect(M,yy,3,7,'F');
+      doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(0,33,105);
+      doc.text(title,M+6,yy+5.5);return yy+14;
+    };
+    // ── Helper: data cell ──
+    const dataCell=(lbl,val,xx,yy)=>{
+      doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(107,114,128);
+      doc.text(lbl,xx,yy);
+      doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(17,24,39);
+      doc.text(val,xx,yy+6.5);
+    };
+    // ── Datos del viaje ──
+    y=secHdr('DATOS DEL VIAJE',y);
+    const col2=M+CW/2+4;
+    const fechaLbl=fmtShort(S.salida)+' - '+fmtShort(S.regreso)+' '+S.salida.substring(0,4);
+    const tvlLbl=S.adultos+' Adulto'+(S.adultos>1?'s':'')+(S.ninos>0?', '+S.ninos+' Nino'+(S.ninos>1?'s':''):'');
+    const totalFinal='RD$'+fmtN(S.prima+(S.cs1?450:0)+(S.cs2?680:0));
+    dataCell('DESTINO',S.destinoLabel||'—',M,y);
+    dataCell('VIGENCIA',fechaLbl+' ('+S.dias+' dias)',col2,y);
+    y+=14;
+    dataCell('VIAJEROS',tvlLbl,M,y);
+    dataCell('TOTAL PAGADO',totalFinal,col2,y);
+    y+=18;
+    doc.setDrawColor(221,225,231);doc.line(M,y,W-M,y);y+=10;
+    // ── Coberturas ──
+    y=secHdr('COBERTURAS INCLUIDAS',y);
+    const covs=[
+      ['Asistencia Medica de Emergencia','RD$100,000'],
+      ['Repatriacion Medica','RD$50,000'],
+      ['Perdida de Equipaje','RD$5,000'],
+      ['Cancelacion de Viaje','RD$2,000'],
+      ['Demoras de Transporte','RD$500'],
+    ];
+    if(S.cs1)covs.push(['Equipaje Premium (adicional)','RD$450']);
+    if(S.cs2)covs.push(['Salud Complementaria (adicional)','RD$680']);
+    covs.forEach(([nm,amt],i)=>{
+      doc.setFillColor(i%2===0?244:255,i%2===0?245:255,i%2===0?247:255);
+      doc.rect(M,y-2,CW,9,'F');
+      doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(17,24,39);
+      doc.text(nm,M+5,y+4.5);
+      doc.setFont('helvetica','bold');doc.setTextColor(0,33,105);
+      doc.text(amt,W-M-3,y+4.5,{align:'right'});
+      y+=9;
+    });
+    y+=10;
+    doc.setDrawColor(221,225,231);doc.line(M,y,W-M,y);y+=12;
+    // ── Asistencia + QR ──
+    y=secHdr('ASISTENCIA 24/7',y);
+    if(qrImg){
+      const qrS=38;const qrX=W-M-qrS;
+      doc.addImage(qrImg,'PNG',qrX,y,qrS,qrS);
+      doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(17,24,39);
+      doc.text('Necesitas ayuda en tu viaje?',M,y+8);
+      doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(107,114,128);
+      doc.text('Escanea el QR para contactar a nuestro',M,y+15);
+      doc.text('equipo por WhatsApp al instante.',M,y+21);
+      doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(0,33,105);
+      doc.text('1-800-UNIT-DO',M,y+32);
+      doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(107,114,128);
+      doc.text('Disponible desde cualquier pais del mundo',M,y+39);
+    }
+    // ── Footer ──
+    doc.setFillColor(0,33,105);doc.rect(0,282,W,15,'F');
+    doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+    doc.text('UNIT — Grupo Universal C. por A.',W/2,289,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setTextColor(160,180,220);doc.setFontSize(7.5);
+    doc.text('Este documento es la poliza oficial de tu seguro de viaje digital.',W/2,294,{align:'center'});
+    hideLoad();
+    doc.save('UNIT-Poliza-'+(S.poliza||'borrador')+'.pdf');
+  },250);
+}
+function resetAll(){
+  S.adultos=1;S.ninos=0;S.cs1=false;S.cs2=false;
+  ['n-a','n-n'].forEach((id,i)=>set(id,i===0?1:0));
+  document.getElementById('btn-am').disabled=true;document.getElementById('btn-nm').disabled=true;
+  document.getElementById('chk-terms').checked=false;document.getElementById('buy-btn').disabled=true;
+  document.getElementById('wa-num').value='';
+  ['cs1','cs2'].forEach(id=>document.getElementById(id).classList.remove('picked'));
+  set('cs-btn1','+ Agregar');set('cs-btn2','+ Agregar');
+  document.getElementById('cs-sum').style.display='none';
+  go(1);
+}
+
+// ─── Init ───
+(function(){
+  const hoy=new Date();
+  const en2=new Date(hoy);en2.setDate(hoy.getDate()+14);
+  const en3=new Date(hoy);en3.setDate(hoy.getDate()+21);
+  document.getElementById('f-salida').value=en2.toISOString().split('T')[0];
+  document.getElementById('f-regreso').value=en3.toISOString().split('T')[0];
+  document.getElementById('destino').value='cancun';
+  updateNav(1);updateSidebar(1);
+  setCardType('credito');
+})();
+</script>
+</body>
+</html>
