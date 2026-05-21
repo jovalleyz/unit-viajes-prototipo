@@ -200,6 +200,18 @@ input,select,textarea,button{font-family:inherit}
 .pol-dest{font-size:13px;opacity:.85;margin-bottom:3px}
 .pol-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;margin-top:8px;letter-spacing:.3px}
 
+/* ═══ VIAJEROS ═══ */
+.viajero-card{margin-bottom:8px;border:2px solid var(--gray-mid);border-radius:16px;overflow:hidden}
+.viajero-header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--gray-bg);border-bottom:1px solid var(--gray-mid)}
+.viajero-num{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.viajero-tipo{font-size:13px;font-weight:700;color:var(--dark)}
+.viajero-body{padding:16px}
+.doc-tabs{display:flex;gap:0;border:2px solid var(--gray-mid);border-radius:10px;overflow:hidden;margin-bottom:10px}
+.doc-tab{flex:1;padding:9px;text-align:center;font-size:13px;font-weight:700;cursor:pointer;color:var(--gray-text);background:#fff;transition:all .15s}
+.doc-tab.selected{background:var(--navy);color:#fff}
+.emg-box{background:var(--gray-bg);border-radius:12px;padding:14px 16px;margin-top:4px}
+.emg-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--gray-text);margin-bottom:12px}
+
 /* ═══ CROSS-SELL ═══ */
 .cs-card{border:2px solid var(--gray-mid);border-radius:16px;padding:16px;margin-bottom:14px;cursor:pointer;transition:border-color .15s,background .15s}
 .cs-card:hover{border-color:#FDBA74}
@@ -440,11 +452,12 @@ input,select,textarea,button{font-family:inherit}
       <div class="sb-step-item" id="sbs1"><div class="sb-step-num">1</div>Datos del Viaje</div>
       <div class="sb-step-item" id="sbs2"><div class="sb-step-num">2</div>Cotización</div>
       <div class="sb-step-item" id="sbs3"><div class="sb-step-num">3</div>Coberturas</div>
-      <div class="sb-step-item" id="sbs4"><div class="sb-step-num">4</div>Confirmación</div>
-      <div class="sb-step-item" id="sbs5"><div class="sb-step-num">5</div>Pago</div>
-      <div class="sb-step-item" id="sbs6"><div class="sb-step-num">6</div>Póliza enviada</div>
-      <div class="sb-step-item" id="sbs7"><div class="sb-step-num">7</div>Ver Póliza</div>
-      <div class="sb-step-item" id="sbs8"><div class="sb-step-num">8</div>Complementos</div>
+      <div class="sb-step-item" id="sbs4"><div class="sb-step-num">4</div>Viajeros</div>
+      <div class="sb-step-item" id="sbs5"><div class="sb-step-num">5</div>Confirmación</div>
+      <div class="sb-step-item" id="sbs6"><div class="sb-step-num">6</div>Pago</div>
+      <div class="sb-step-item" id="sbs7"><div class="sb-step-num">7</div>Póliza enviada</div>
+      <div class="sb-step-item" id="sbs8"><div class="sb-step-num">8</div>Ver Póliza</div>
+      <div class="sb-step-item" id="sbs9"><div class="sb-step-num">9</div>Complementos</div>
     </div>
 
     <!-- Total (visible from paso 2) -->
@@ -484,7 +497,9 @@ input,select,textarea,button{font-family:inherit}
       <div class="dot" id="d7"></div>
       <div class="dot-line" id="dl7"></div>
       <div class="dot" id="d8"></div>
-      <span class="step-lbl" id="step-lbl">Paso 1 de 8</span>
+      <div class="dot-line" id="dl8"></div>
+      <div class="dot" id="d9"></div>
+      <span class="step-lbl" id="step-lbl">Paso 1 de 9</span>
     </div>
 
     <!-- Desktop top bar -->
@@ -498,7 +513,8 @@ input,select,textarea,button{font-family:inherit}
         <div class="desk-dot" id="dd6"></div>
         <div class="desk-dot" id="dd7"></div>
         <div class="desk-dot" id="dd8"></div>
-        <span class="desk-step-lbl" id="desk-step-lbl">Paso 1 de 8</span>
+        <div class="desk-dot" id="dd9"></div>
+        <span class="desk-step-lbl" id="desk-step-lbl">Paso 1 de 9</span>
       </div>
     </div>
     <div class="desk-prog-wrap"><div class="desk-prog-fill" id="desk-prog" style="width:12%"></div></div>
@@ -702,16 +718,31 @@ input,select,textarea,button{font-family:inherit}
         <div class="note">ℹ️ Coberturas estándar incluidas. Límites máximos por viajero.</div>
       </div>
       <div class="scr-foot">
-        <button class="btn btn-primary" onclick="go(4)">Confirmar coberturas →</button>
+        <button class="btn btn-primary" onclick="buildViajerosForms();go(4)">Continuar →</button>
         <button class="btn btn-ghost" onclick="go(2)">← Atrás</button>
       </div>
     </div>
 
 
     <!-- ════════════════════════════════════════
-         PASO 4 — Confirmación
+         PASO 4 — Datos de los Viajeros
     ════════════════════════════════════════ -->
     <div class="screen" id="s4">
+      <div class="scr-body">
+        <div class="ttl">Datos de los viajeros</div>
+        <div class="sub">Información de cada persona asegurada</div>
+        <div id="viajeros-container"></div>
+      </div>
+      <div class="scr-foot">
+        <button class="btn btn-primary" onclick="validarViajeros()">Continuar →</button>
+        <button class="btn btn-ghost" onclick="go(3)">← Atrás</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         PASO 5 — Confirmación
+    ════════════════════════════════════════ -->
+    <div class="screen" id="s5">
       <div class="scr-body">
         <div class="ttl">Confirmar Compra</div>
         <div class="sub">Un paso más y tu póliza estará lista</div>
@@ -759,15 +790,15 @@ input,select,textarea,button{font-family:inherit}
       </div>
       <div class="scr-foot">
         <button class="btn btn-primary" id="buy-btn" disabled onclick="irAPago()">Ir a Pagar →</button>
-        <button class="btn btn-ghost" onclick="go(3)">← Atrás</button>
+        <button class="btn btn-ghost" onclick="go(4)">← Atrás</button>
       </div>
     </div>
 
 
     <!-- ════════════════════════════════════════
-         PASO 5 — Pago con Tarjeta
+         PASO 6 — Pago con Tarjeta
     ════════════════════════════════════════ -->
-    <div class="screen" id="s5">
+    <div class="screen" id="s6">
       <div class="scr-body">
         <div class="ttl">Pago Seguro</div>
         <div class="sub">Total: <strong id="pago-total-lbl" style="color:var(--navy)">—</strong></div>
@@ -827,15 +858,15 @@ input,select,textarea,button{font-family:inherit}
       </div>
       <div class="scr-foot">
         <button class="btn btn-primary" onclick="procesarPago()">🔒 Pagar <span id="pagar-amt">—</span></button>
-        <button class="btn btn-ghost" onclick="go(4)">← Atrás</button>
+        <button class="btn btn-ghost" onclick="go(5)">← Atrás</button>
       </div>
     </div>
 
 
     <!-- ════════════════════════════════════════
-         PASO 6 — Confirmación
+         PASO 7 — Confirmación
     ════════════════════════════════════════ -->
-    <div class="screen" id="s6">
+    <div class="screen" id="s7">
       <div class="scr-body" style="padding-top:32px">
 
         <!-- Ícono éxito -->
@@ -892,15 +923,15 @@ input,select,textarea,button{font-family:inherit}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.117 1.532 5.845L0 24l6.322-1.508A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6c-1.96 0-3.789-.526-5.364-1.44L3.6 21.2l1.06-3.92A9.57 9.57 0 012.4 12c0-5.302 4.298-9.6 9.6-9.6s9.6 4.298 9.6 9.6-4.298 9.6-9.6 9.6z"/></svg>
           Ver tu póliza en tu WhatsApp
         </button>
-        <button class="btn btn-secondary" onclick="go(7)">Ver mis coberturas →</button>
+        <button class="btn btn-secondary" onclick="go(8)">Ver mis coberturas →</button>
       </div>
     </div>
 
 
     <!-- ════════════════════════════════════════
-         PASO 7 — Mi Póliza
+         PASO 8 — Mi Póliza
     ════════════════════════════════════════ -->
-    <div class="screen" id="s7">
+    <div class="screen" id="s8">
       <div class="scr-body">
         <div class="pol-card">
           <div class="pol-num" id="p6-num">SVT-2026-0000000</div>
@@ -936,15 +967,15 @@ input,select,textarea,button{font-family:inherit}
       </div>
       <div class="scr-foot">
         <button class="btn btn-secondary" onclick="downloadPoliza()">📄 Descargar Póliza PDF</button>
-        <button class="btn btn-primary" onclick="go(8)">¿Quieres más cobertura? →</button>
+        <button class="btn btn-primary" onclick="go(9)">¿Quieres más cobertura? →</button>
       </div>
     </div>
 
 
     <!-- ════════════════════════════════════════
-         PASO 8 — Cross-Sell
+         PASO 9 — Cross-Sell
     ════════════════════════════════════════ -->
-    <div class="screen" id="s8">
+    <div class="screen" id="s9">
       <div class="scr-body">
         <div class="ttl">Asegura tu viaje completo</div>
         <div class="sub" id="cs-ctx">Complementa tu cobertura:</div>
@@ -988,15 +1019,15 @@ input,select,textarea,button{font-family:inherit}
       </div>
       <div class="scr-foot">
         <button class="btn btn-primary" id="cs-buy-btn" onclick="finalizarExtras()">Finalizar →</button>
-        <button class="btn btn-ghost" onclick="go(9)">Continuar sin agregar</button>
+        <button class="btn btn-ghost" onclick="go(10)">Continuar sin agregar</button>
       </div>
     </div>
 
 
     <!-- ════════════════════════════════════════
-         PASO 9 — Confirmación Final
+         PASO 10 — Confirmación Final
     ════════════════════════════════════════ -->
-    <div class="screen" id="s9">
+    <div class="screen" id="s10">
       <div class="scr-body" style="text-align:center;padding-top:36px">
         <div class="success-ring">🎉</div>
         <div class="ttl">¡Todo listo para viajar!</div>
@@ -1053,7 +1084,7 @@ input,select,textarea,button{font-family:inherit}
 const S={adultos:1,ninos:0,destino:'',destinoLabel:'',salida:'',regreso:'',dias:0,prima:0,primaA:0,primaK:0,whatsapp:'',poliza:'',cs1:false,cs2:false,step:1,tipoViaje:'',extrasMode:false};
 const DEST={miami:{label:'Miami, Florida',factor:1.5},nueva_york:{label:'Nueva York, NY',factor:1.5},orlando:{label:'Orlando, Florida',factor:1.5},cancun:{label:'Cancún, México',factor:1.1},mexico_city:{label:'Ciudad de México',factor:1.0},madrid:{label:'Madrid, España',factor:1.8},barcelona:{label:'Barcelona, España',factor:1.8},paris:{label:'París, Francia',factor:1.8},roma:{label:'Roma, Italia',factor:1.8},bogota:{label:'Bogotá, Colombia',factor:1.0},cartagena:{label:'Cartagena, Colombia',factor:1.0},panama:{label:'Ciudad de Panamá',factor:1.0},san_jose:{label:'San José, Costa Rica',factor:1.0},buenos_aires:{label:'Buenos Aires, Argentina',factor:1.1},puerto_rico:{label:'San Juan, Puerto Rico',factor:1.0},aruba:{label:'Aruba',factor:1.0},cuba:{label:'La Habana, Cuba',factor:1.0}};
 const RATE_A=178,RATE_K=89;
-const STEP_LABELS=['','Datos del Viaje','Cotización','Coberturas','Confirmación','Pago','Póliza enviada','Ver Póliza','Complementos'];
+const STEP_LABELS=['','Datos del Viaje','Cotización','Coberturas','Viajeros','Confirmación','Pago','Póliza enviada','Ver Póliza','Complementos'];
 
 // ─── Navegación ───
 let timer;
@@ -1070,7 +1101,7 @@ function _show(n){
   window.scrollTo(0,0);
 }
 function updateNav(step){
-  const tot=8;
+  const tot=9;
   const lbl='Paso '+step+' de '+tot;
   const stepLbl=document.getElementById('step-lbl');if(stepLbl)stepLbl.textContent=lbl;
   const dp=document.getElementById('desk-prog');if(dp)dp.style.width=Math.round(step/tot*100)+'%';
@@ -1099,9 +1130,9 @@ function finalizarExtras(){
     const extra=(S.cs1?450:0)+(S.cs2?680:0);
     const t='RD$'+fmtN(extra);
     set('pago-total-lbl',t);set('pagar-amt',t);
-    go(5);
+    go(6);
   } else {
-    go(9);
+    go(10);
   }
 }
 function updateSidebar(step){
@@ -1161,7 +1192,67 @@ function irPaso2(){
 }
 function tick(s){const el=document.getElementById('countdown');if(el)el.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
 
-// ─── Paso 4 ───
+// ─── Paso 4: Viajeros ───
+function buildViajerosForms(){
+  const c=document.getElementById('viajeros-container');
+  if(!c)return;
+  let html='';
+  const total=S.adultos+S.ninos;
+  for(let i=0;i<S.adultos;i++) html+=viajeroHTML(i+1,'Adulto',i===0,total);
+  for(let i=0;i<S.ninos;i++) html+=viajeroHTML(S.adultos+i+1,'Niño',false,total);
+  c.innerHTML=html;
+}
+function viajeroHTML(n,tipo,isTitular,total){
+  const sep=n<total?'<div class="hr" style="margin:20px 0"></div>':'';
+  return `<div class="viajero-card">
+  <div class="viajero-header">
+    <div class="viajero-num">${n}</div>
+    <span class="viajero-tipo">${tipo} ${n}</span>
+  </div>
+  <div class="viajero-body">
+    ${isTitular?`<div class="chk-row" style="margin-bottom:18px"><input type="checkbox" id="titular${n}" onchange="toggleTitular(${n})"><label class="chk-lbl" for="titular${n}"><strong>Soy yo</strong> — estoy comprando para mí mismo</label></div>`:''}
+    <div class="date-row" style="margin-bottom:16px">
+      <div class="fld" style="margin:0"><label class="lbl">Nombre</label><input type="text" class="inp" id="v${n}-nombre" placeholder="Nombre"></div>
+      <div class="fld" style="margin:0"><label class="lbl">Apellido</label><input type="text" class="inp" id="v${n}-apellido" placeholder="Apellido"></div>
+    </div>
+    <div class="fld">
+      <label class="lbl">Documento</label>
+      <div class="doc-tabs"><div class="doc-tab selected" id="v${n}-tab-ced" onclick="setDoc(${n},'cedula')">Cédula</div><div class="doc-tab" id="v${n}-tab-pas" onclick="setDoc(${n},'pasaporte')">Pasaporte</div></div>
+      <input type="text" class="inp" id="v${n}-doc" placeholder="Número de documento">
+    </div>
+    ${tipo==='Adulto'?`<div class="fld"><label class="lbl">Teléfono / WhatsApp</label><div class="phone-row"><div class="phone-pfx">🇩🇴 +1</div><input type="tel" class="inp" style="flex:1" id="v${n}-tel" placeholder="809-555-1234"></div></div>`:''}
+    <div class="emg-box">
+      <div class="emg-title">Contacto de emergencia</div>
+      <div class="fld" style="margin-bottom:10px"><input type="text" class="inp" id="v${n}-emg-nom" placeholder="Nombre completo"></div>
+      <div class="phone-row"><div class="phone-pfx">🇩🇴 +1</div><input type="tel" class="inp" style="flex:1" id="v${n}-emg-tel" placeholder="809-555-1234"></div>
+    </div>
+  </div>
+</div>${sep}`;
+}
+function setDoc(n,tipo){
+  document.getElementById('v'+n+'-tab-ced').className='doc-tab'+(tipo==='cedula'?' selected':'');
+  document.getElementById('v'+n+'-tab-pas').className='doc-tab'+(tipo==='pasaporte'?' selected':'');
+  document.getElementById('v'+n+'-doc').placeholder=tipo==='cedula'?'000-0000000-0':'Número de pasaporte';
+}
+function toggleTitular(n){
+  // placeholder for future pre-fill logic
+}
+function validarViajeros(){
+  const total=S.adultos+S.ninos;
+  let ok=true;
+  for(let i=1;i<=total;i++){
+    const nom=document.getElementById('v'+i+'-nombre');
+    const ape=document.getElementById('v'+i+'-apellido');
+    const doc=document.getElementById('v'+i+'-doc');
+    if(!nom||!nom.value.trim()){if(nom)nom.classList.add('error');ok=false;}else if(nom)nom.classList.remove('error');
+    if(!ape||!ape.value.trim()){if(ape)ape.classList.add('error');ok=false;}else if(ape)ape.classList.remove('error');
+    if(!doc||!doc.value.trim()){if(doc)doc.classList.add('error');ok=false;}else if(doc)doc.classList.remove('error');
+  }
+  if(!ok){alert('Por favor completa nombre, apellido y documento de cada viajero.');return;}
+  go(5);
+}
+
+// ─── Paso 5 ───
 function checkBuyBtn(){document.getElementById('buy-btn').disabled=!document.getElementById('chk-terms').checked;}
 function irAPago(){
   const wa=document.getElementById('wa-num').value.trim();
@@ -1169,7 +1260,7 @@ function irAPago(){
   hide('err-wa');document.getElementById('wa-num').classList.remove('error');
   S.whatsapp='+1-'+wa;
   const t='RD$'+fmtN(S.prima);set('pago-total-lbl',t);set('pagar-amt',t);
-  go(5);
+  go(6);
 }
 
 // ─── Paso 5: Pago ───
@@ -1207,10 +1298,10 @@ function procesarPago(){
     setTimeout(()=>{
       if(!S.extrasMode){
         S.poliza='SVT-'+new Date().getFullYear()+'-'+(1000000+Math.floor(Math.random()*8999999));
-        hideLoad();fillStep6();go(6);
+        hideLoad();fillStep6();go(7);
       } else {
         S.extrasMode=false;
-        hideLoad();updateFinalTotal();go(9);
+        hideLoad();updateFinalTotal();go(10);
       }
     },1400);
   },1800);
