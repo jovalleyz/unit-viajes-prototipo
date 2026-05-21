@@ -175,8 +175,14 @@ input,select,textarea,button{font-family:inherit}
 .wa-avatar-circle{width:36px;height:36px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0}
 .wa-contact-name{font-size:14px;font-weight:700;color:#fff}
 .wa-contact-sub{font-size:11px;color:rgba(255,255,255,.65)}
-.wa-chat-body{padding:12px 12px 6px;display:flex;flex-direction:column;align-items:flex-start;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
-.wa-bubble{background:#fff;border-radius:0 10px 10px 10px;padding:12px 14px;max-width:88%;position:relative;box-shadow:0 1px 2px rgba(0,0,0,.13)}
+.wa-chat-body{padding:12px;display:flex;flex-direction:row;align-items:flex-start;gap:10px;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.wa-pol-summary{flex:1;background:rgba(255,255,255,.92);border-radius:10px;padding:11px 12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.wa-pol-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--navy);padding-bottom:6px;border-bottom:1px solid rgba(0,33,105,.1)}
+.wa-pol-row{display:flex;flex-direction:column;gap:1px}
+.wa-pol-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-text)}
+.wa-pol-val{font-size:11px;font-weight:700;color:var(--dark);line-height:1.3}
+.wa-pol-badge{display:inline-block;background:var(--orange);color:#fff;font-size:8px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:20px;margin-top:2px}
+.wa-bubble{background:#fff;border-radius:0 10px 10px 10px;padding:12px 14px;flex:1.1;position:relative;box-shadow:0 1px 2px rgba(0,0,0,.13)}
 .wa-bubble::before{content:'';position:absolute;top:0;left:-8px;border-width:0 8px 8px 0;border-style:solid;border-color:transparent #fff transparent transparent}
 .wa-bubble-title{font-size:14px;font-weight:800;color:#075E54;margin-bottom:8px}
 .wa-bubble-line{display:flex;align-items:baseline;gap:6px;font-size:13px;color:#1a1a1a;margin-bottom:5px;line-height:1.3}
@@ -883,6 +889,27 @@ input,select,textarea,button{font-family:inherit}
                 Ahora
               </div>
             </div>
+            <!-- Resumen de póliza -->
+            <div class="wa-pol-summary">
+              <div class="wa-pol-title">Tu Póliza</div>
+              <div class="wa-pol-row">
+                <span class="wa-pol-lbl">Número</span>
+                <span class="wa-pol-val" id="wps-num">—</span>
+              </div>
+              <div class="wa-pol-row">
+                <span class="wa-pol-lbl">Destino</span>
+                <span class="wa-pol-val" id="wps-dest">—</span>
+              </div>
+              <div class="wa-pol-row">
+                <span class="wa-pol-lbl">Vigencia</span>
+                <span class="wa-pol-val" id="wps-dates">—</span>
+              </div>
+              <div class="wa-pol-row">
+                <span class="wa-pol-lbl">Cobertura</span>
+                <span class="wa-pol-val">RD$100,000</span>
+              </div>
+              <div class="wa-pol-badge">Activa</div>
+            </div>
           </div>
         </div>
 
@@ -1218,7 +1245,9 @@ function procesarPago(){
 function fillStep6(){
   set('pol-chip',S.poliza);set('wa-sent',S.whatsapp);set('active-til',fmtLong(S.regreso));
   set('wa-pnum',S.poliza);set('wa-pdest',S.destinoLabel);
-  set('wa-pdates',fmtShort(S.salida)+' – '+fmtShort(S.regreso)+' '+S.salida.substring(0,4));
+  const waDates=fmtShort(S.salida)+' – '+fmtShort(S.regreso)+' '+S.salida.substring(0,4);
+  set('wa-pdates',waDates);
+  set('wps-num',S.poliza);set('wps-dest',S.destinoLabel);set('wps-dates',waDates);
   set('p6-num',S.poliza);
   set('p6-dest',S.destinoLabel+' · '+fmtShort(S.salida)+'-'+fmtShort(S.regreso)+' '+S.salida.substring(0,4));
   set('p6-tvl',S.adultos+' Adulto'+(S.adultos>1?'s':'')+(S.ninos>0?', '+S.ninos+' Niño'+(S.ninos>1?'s':''):''));
