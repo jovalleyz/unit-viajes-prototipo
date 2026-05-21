@@ -45,17 +45,22 @@ input,select,textarea,button{font-family:inherit}
 .mob-header-label{color:rgba(255,255,255,.7);font-size:12px;font-weight:500}
 
 /* ═══ PROGRESS ═══ */
-.progress-wrap{height:3px;background:var(--gray-mid);flex-shrink:0}
-.progress-fill{height:100%;background:var(--orange);transition:width .4s ease}
+.progress-wrap{display:none}
 .step-bar{
-  padding:10px 20px;background:var(--gray-bg);
+  padding:14px 16px 12px;background:#fff;
   border-bottom:1px solid var(--gray-mid);
-  display:flex;align-items:center;gap:6px;flex-shrink:0;
+  display:flex;align-items:center;gap:0;flex-shrink:0;
 }
-.dot{width:7px;height:7px;border-radius:50%;background:var(--gray-mid);transition:all .3s;flex-shrink:0}
-.dot.active{width:22px;border-radius:4px;background:var(--navy)}
-.dot.done{background:var(--orange)}
-.step-lbl{margin-left:auto;font-size:11px;color:var(--gray-text);font-weight:600;letter-spacing:.3px}
+.dot{
+  width:11px;height:11px;border-radius:50%;flex-shrink:0;
+  background:#fff;border:2px solid var(--gray-mid);
+  transition:all .3s;
+}
+.dot.active{background:var(--navy);border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,33,105,.14)}
+.dot.done{background:var(--orange);border-color:var(--orange)}
+.dot-line{flex:1;height:2px;background:var(--gray-mid);transition:background .4s;min-width:4px}
+.dot-line.done{background:var(--orange)}
+.step-lbl{margin-left:10px;font-size:10px;color:var(--gray-text);font-weight:700;letter-spacing:.3px;white-space:nowrap;flex-shrink:0}
 
 /* ═══ SCREENS ═══ */
 @keyframes stepIn{
@@ -203,6 +208,26 @@ input,select,textarea,button{font-family:inherit}
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
 .badge-o{background:#FFF0E6;color:var(--orange)}
 .badge-b{background:#EEF2FF;color:var(--navy)}
+
+/* ═══ TIPO VIAJE ═══ */
+.tipo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:6px}
+.tipo-card{border:2px solid var(--gray-mid);border-radius:16px;padding:18px 8px 14px;text-align:center;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px}
+.tipo-card:hover{border-color:#BCCBF0}
+.tipo-card.selected{border-color:var(--navy);background:#EEF3FF}
+.tipo-card-ico{font-size:30px;line-height:1}
+.tipo-card-lbl{font-size:12px;font-weight:700;color:var(--gray-text)}
+.tipo-card.selected .tipo-card-lbl{color:var(--navy)}
+
+/* ═══ FAB WHATSAPP ═══ */
+.fab-wa-float{
+  position:fixed;bottom:28px;right:22px;
+  width:54px;height:54px;border-radius:50%;
+  background:#25D366;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(37,211,102,.45);
+  z-index:60;transition:transform .15s,box-shadow .15s;
+}
+.fab-wa-float:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(37,211,102,.55)}
 
 /* ═══ FINAL ═══ */
 .prod-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px dashed var(--gray-mid)}
@@ -367,6 +392,11 @@ input,select,textarea,button{font-family:inherit}
 
 <div id="qr-temp" style="position:fixed;left:-9999px;top:-9999px;visibility:hidden"></div>
 
+<!-- Floating WhatsApp -->
+<button class="fab-wa-float" onclick="window.open('https://wa.me/18095001234?text=Hola%2C+necesito+asistencia+con+mi+seguro+de+viaje+UNIT','_blank')" title="Asistencia por WhatsApp">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.117 1.532 5.845L0 24l6.322-1.508A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6c-1.96 0-3.789-.526-5.364-1.44L3.6 21.2l1.06-3.92A9.57 9.57 0 012.4 12c0-5.302 4.298-9.6 9.6-9.6s9.6 4.298 9.6 9.6-4.298 9.6-9.6 9.6z"/></svg>
+</button>
+
 <div class="app">
 
   <!-- ═══════════════ SIDEBAR (desktop only) ═══════════════ -->
@@ -427,15 +457,21 @@ input,select,textarea,button{font-family:inherit}
     </div>
 
     <!-- Mobile progress -->
-    <div class="progress-wrap"><div class="progress-fill" id="prog" style="width:12%"></div></div>
     <div class="step-bar">
       <div class="dot active" id="d1"></div>
+      <div class="dot-line" id="dl1"></div>
       <div class="dot" id="d2"></div>
+      <div class="dot-line" id="dl2"></div>
       <div class="dot" id="d3"></div>
+      <div class="dot-line" id="dl3"></div>
       <div class="dot" id="d4"></div>
+      <div class="dot-line" id="dl4"></div>
       <div class="dot" id="d5"></div>
+      <div class="dot-line" id="dl5"></div>
       <div class="dot" id="d6"></div>
+      <div class="dot-line" id="dl6"></div>
       <div class="dot" id="d7"></div>
+      <div class="dot-line" id="dl7"></div>
       <div class="dot" id="d8"></div>
       <span class="step-lbl" id="step-lbl">Paso 1 de 8</span>
     </div>
@@ -464,6 +500,25 @@ input,select,textarea,button{font-family:inherit}
       <div class="scr-body">
         <div class="ttl">¿A dónde viajas?</div>
         <div class="sub">Cuéntanos sobre tu viaje para cotizar al instante</div>
+
+        <div class="fld">
+          <label class="lbl">Motivo del viaje</label>
+          <div class="tipo-grid">
+            <div class="tipo-card" id="tipo-placer" onclick="setTipo('placer')">
+              <span class="tipo-card-ico">🏖️</span>
+              <span class="tipo-card-lbl">Placer</span>
+            </div>
+            <div class="tipo-card" id="tipo-negocios" onclick="setTipo('negocios')">
+              <span class="tipo-card-ico">💼</span>
+              <span class="tipo-card-lbl">Negocios</span>
+            </div>
+            <div class="tipo-card" id="tipo-estudio" onclick="setTipo('estudio')">
+              <span class="tipo-card-ico">🎓</span>
+              <span class="tipo-card-lbl">Estudio</span>
+            </div>
+          </div>
+          <div class="err-msg" id="err-tipo">Selecciona el motivo del viaje</div>
+        </div>
 
         <div class="fld">
           <label class="lbl">Destino</label>
@@ -811,11 +866,11 @@ input,select,textarea,button{font-family:inherit}
 
       </div>
       <div class="scr-foot">
-        <button class="btn btn-wa" style="display:flex;align-items:center;justify-content:center;gap:8px">
+        <button class="btn btn-wa" style="display:flex;align-items:center;justify-content:center;gap:8px" onclick="window.open('https://wa.me/18095001234','_blank')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.117 1.532 5.845L0 24l6.322-1.508A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6c-1.96 0-3.789-.526-5.364-1.44L3.6 21.2l1.06-3.92A9.57 9.57 0 012.4 12c0-5.302 4.298-9.6 9.6-9.6s9.6 4.298 9.6 9.6-4.298 9.6-9.6 9.6z"/></svg>
-          Abrir en WhatsApp
+          Ver tu póliza en tu WhatsApp
         </button>
-        <button class="btn btn-secondary" onclick="go(7)">Ver mis coberturas →</button>
+        <button class="btn btn-secondary" onclick="downloadPoliza()">📄 Descargar mi póliza</button>
       </div>
     </div>
 
@@ -910,8 +965,8 @@ input,select,textarea,button{font-family:inherit}
         </div>
       </div>
       <div class="scr-foot">
-        <button class="btn btn-primary" id="cs-buy-btn" onclick="go(9)">Finalizar →</button>
-        <button class="btn btn-ghost" onclick="go(9)">Finalizar sin agregar</button>
+        <button class="btn btn-primary" id="cs-buy-btn" onclick="finalizarExtras()">Finalizar →</button>
+        <button class="btn btn-ghost" onclick="go(9)">Continuar sin agregar</button>
       </div>
     </div>
 
@@ -973,7 +1028,7 @@ input,select,textarea,button{font-family:inherit}
 
 <script>
 // ─── Estado ───
-const S={adultos:1,ninos:0,destino:'',destinoLabel:'',salida:'',regreso:'',dias:0,prima:0,primaA:0,primaK:0,whatsapp:'',poliza:'',cs1:false,cs2:false,step:1};
+const S={adultos:1,ninos:0,destino:'',destinoLabel:'',salida:'',regreso:'',dias:0,prima:0,primaA:0,primaK:0,whatsapp:'',poliza:'',cs1:false,cs2:false,step:1,tipoViaje:'',extrasMode:false};
 const DEST={miami:{label:'Miami, Florida',factor:1.5},nueva_york:{label:'Nueva York, NY',factor:1.5},orlando:{label:'Orlando, Florida',factor:1.5},cancun:{label:'Cancún, México',factor:1.1},mexico_city:{label:'Ciudad de México',factor:1.0},madrid:{label:'Madrid, España',factor:1.8},barcelona:{label:'Barcelona, España',factor:1.8},paris:{label:'París, Francia',factor:1.8},roma:{label:'Roma, Italia',factor:1.8},bogota:{label:'Bogotá, Colombia',factor:1.0},cartagena:{label:'Cartagena, Colombia',factor:1.0},panama:{label:'Ciudad de Panamá',factor:1.0},san_jose:{label:'San José, Costa Rica',factor:1.0},buenos_aires:{label:'Buenos Aires, Argentina',factor:1.1},puerto_rico:{label:'San Juan, Puerto Rico',factor:1.0},aruba:{label:'Aruba',factor:1.0},cuba:{label:'La Habana, Cuba',factor:1.0}};
 const RATE_A=178,RATE_K=89;
 const STEP_LABELS=['','Datos del Viaje','Cotización','Coberturas','Confirmación','Pago','Póliza enviada','Ver Póliza','Complementos'];
@@ -994,21 +1049,37 @@ function _show(n){
 }
 function updateNav(step){
   const tot=8;
-  const pct=Math.round(step/tot*100)+'%';
   const lbl='Paso '+step+' de '+tot;
-  // mobile
-  const prog=document.getElementById('prog');if(prog)prog.style.width=pct;
   const stepLbl=document.getElementById('step-lbl');if(stepLbl)stepLbl.textContent=lbl;
-  // desktop
-  const dp=document.getElementById('desk-prog');if(dp)dp.style.width=pct;
+  const dp=document.getElementById('desk-prog');if(dp)dp.style.width=Math.round(step/tot*100)+'%';
   const dl=document.getElementById('desk-step-lbl');if(dl)dl.textContent=lbl;
-  // dots
   for(let i=1;i<=tot;i++){
-    const cls='dot'+(i===step?' active':i<step?' done':'');
-    const d=document.getElementById('d'+i);if(d)d.className=cls;
-    const dd=document.getElementById('dd'+i);if(dd)dd.className='desk-dot'+(i===step?' active':i<step?' done':'');
+    const d=document.getElementById('d'+i);
+    if(d)d.className='dot'+(i===step?' active':i<step?' done':'');
+    const line=document.getElementById('dl'+i);
+    if(line)line.className='dot-line'+(i<step?' done':'');
+    const dd=document.getElementById('dd'+i);
+    if(dd)dd.className='desk-dot'+(i===step?' active':i<step?' done':'');
     const sb=document.getElementById('sbs'+i);
     if(sb)sb.className='sb-step-item'+(i===step?' active':i<step?' done':'');
+  }
+}
+function setTipo(t){
+  S.tipoViaje=t;
+  ['placer','negocios','estudio'].forEach(id=>{
+    document.getElementById('tipo-'+id).classList.toggle('selected',id===t);
+  });
+  hide('err-tipo');
+}
+function finalizarExtras(){
+  if(S.cs1||S.cs2){
+    S.extrasMode=true;
+    const extra=(S.cs1?450:0)+(S.cs2?680:0);
+    const t='RD$'+fmtN(extra);
+    set('pago-total-lbl',t);set('pagar-amt',t);
+    go(5);
+  } else {
+    go(9);
   }
 }
 function updateSidebar(step){
@@ -1030,6 +1101,7 @@ function irPaso2(){
   const sal=document.getElementById('f-salida').value;
   const reg=document.getElementById('f-regreso').value;
   let ok=true;
+  if(!S.tipoViaje){show('err-tipo');ok=false;}else hide('err-tipo');
   if(!dest){show('err-destino');ok=false;}else hide('err-destino');
   if(!sal||!reg){show('err-fecha','Las fechas son obligatorias');ok=false;}
   else{const d=diffDays(sal,reg);if(d<=0){show('err-fecha','La fecha de regreso debe ser posterior a la salida');ok=false;}else if(d>180){show('err-fecha','Máximo 180 días de cobertura');ok=false;}else{hide('err-fecha');S.dias=d;}}
@@ -1108,10 +1180,16 @@ function procesarPago(){
   if(!ok)return;
   showLoad('Autorizando pago...','Procesando con tu banco...');
   setTimeout(()=>{
-    set('ld-txt','Emitiendo póliza...');set('ld-sub','Enviando a WhatsApp...');
+    set('ld-txt',S.extrasMode?'Actualizando tu póliza...':'Emitiendo póliza...');
+    set('ld-sub',S.extrasMode?'Agregando coberturas adicionales...':'Enviando a WhatsApp...');
     setTimeout(()=>{
-      S.poliza='SVT-'+new Date().getFullYear()+'-'+(1000000+Math.floor(Math.random()*8999999));
-      hideLoad();fillStep6();go(6);
+      if(!S.extrasMode){
+        S.poliza='SVT-'+new Date().getFullYear()+'-'+(1000000+Math.floor(Math.random()*8999999));
+        hideLoad();fillStep6();go(6);
+      } else {
+        S.extrasMode=false;
+        hideLoad();updateFinalTotal();go(9);
+      }
     },1400);
   },1800);
 }
@@ -1272,7 +1350,8 @@ function downloadPoliza(){
   },250);
 }
 function resetAll(){
-  S.adultos=1;S.ninos=0;S.cs1=false;S.cs2=false;
+  S.adultos=1;S.ninos=0;S.cs1=false;S.cs2=false;S.tipoViaje='';S.extrasMode=false;
+  ['placer','negocios','estudio'].forEach(id=>document.getElementById('tipo-'+id).classList.remove('selected'));
   ['n-a','n-n'].forEach((id,i)=>set(id,i===0?1:0));
   document.getElementById('btn-am').disabled=true;document.getElementById('btn-nm').disabled=true;
   document.getElementById('chk-terms').checked=false;document.getElementById('buy-btn').disabled=true;
