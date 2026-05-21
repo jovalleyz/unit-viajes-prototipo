@@ -766,14 +766,22 @@ input,select,textarea,button{font-family:inherit}
 
         <div class="hr"></div>
 
-        <div class="fld">
-          <label class="lbl">💬 Tu número de WhatsApp</label>
+        <!-- Info titular (visible cuando marcó "Soy yo") -->
+        <div id="wa-titular-info" style="display:none;align-items:center;gap:10px;padding:12px 14px;background:#EEF3FF;border-radius:12px;border:1px solid #BCCBF0;margin-bottom:4px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+          <div><div style="font-size:12px;font-weight:700;color:var(--navy)">Tu póliza se enviará a tu WhatsApp registrado</div><div style="font-size:12px;color:var(--gray-text)" id="wa-titular-num">—</div></div>
+        </div>
+
+        <!-- Campo WA (oculto si es titular) -->
+        <div class="fld" id="wa-row">
+          <label class="lbl">Tu número de WhatsApp</label>
           <div class="phone-row">
-            <div class="phone-pfx">🇩🇴 +1</div>
-            <input type="tel" class="inp" style="flex:1" id="wa-num" placeholder="809-555-1234" maxlength="12" oninput="this.value=this.value.replace(/[^0-9-]/g,'')">
+            <div class="phone-pfx">DO +1</div>
+            <input type="tel" class="inp" style="flex:1" id="wa-num" placeholder="809-555-1234" maxlength="12" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
           </div>
           <div style="font-size:12px;color:var(--gray-text);margin-top:6px">Recibirás tu póliza en PDF por WhatsApp al instante</div>
           <div class="err-msg" id="err-wa">Ingresa un número válido (mínimo 7 dígitos)</div>
+        </div>
         </div>
 
         <div class="total-bar">
@@ -1081,7 +1089,7 @@ input,select,textarea,button{font-family:inherit}
 
 <script>
 // ─── Estado ───
-const S={adultos:1,ninos:0,destino:'',destinoLabel:'',salida:'',regreso:'',dias:0,prima:0,primaA:0,primaK:0,whatsapp:'',poliza:'',cs1:false,cs2:false,step:1,tipoViaje:'',extrasMode:false};
+const S={adultos:1,ninos:0,destino:'',destinoLabel:'',salida:'',regreso:'',dias:0,prima:0,primaA:0,primaK:0,whatsapp:'',poliza:'',cs1:false,cs2:false,step:1,tipoViaje:'',extrasMode:false,viajeros:[],titularCheck:false};
 const DEST={miami:{label:'Miami, Florida',factor:1.5},nueva_york:{label:'Nueva York, NY',factor:1.5},orlando:{label:'Orlando, Florida',factor:1.5},cancun:{label:'Cancún, México',factor:1.1},mexico_city:{label:'Ciudad de México',factor:1.0},madrid:{label:'Madrid, España',factor:1.8},barcelona:{label:'Barcelona, España',factor:1.8},paris:{label:'París, Francia',factor:1.8},roma:{label:'Roma, Italia',factor:1.8},bogota:{label:'Bogotá, Colombia',factor:1.0},cartagena:{label:'Cartagena, Colombia',factor:1.0},panama:{label:'Ciudad de Panamá',factor:1.0},san_jose:{label:'San José, Costa Rica',factor:1.0},buenos_aires:{label:'Buenos Aires, Argentina',factor:1.1},puerto_rico:{label:'San Juan, Puerto Rico',factor:1.0},aruba:{label:'Aruba',factor:1.0},cuba:{label:'La Habana, Cuba',factor:1.0}};
 const RATE_A=178,RATE_K=89;
 const STEP_LABELS=['','Datos del Viaje','Cotización','Coberturas','Viajeros','Confirmación','Pago','Póliza enviada','Ver Póliza','Complementos'];
@@ -1220,11 +1228,11 @@ function viajeroHTML(n,tipo,isTitular,total){
       <div class="doc-tabs"><div class="doc-tab selected" id="v${n}-tab-ced" onclick="setDoc(${n},'cedula')">Cédula</div><div class="doc-tab" id="v${n}-tab-pas" onclick="setDoc(${n},'pasaporte')">Pasaporte</div></div>
       <input type="text" class="inp" id="v${n}-doc" placeholder="Número de documento">
     </div>
-    ${tipo==='Adulto'?`<div class="fld"><label class="lbl">Teléfono / WhatsApp</label><div class="phone-row"><div class="phone-pfx">🇩🇴 +1</div><input type="tel" class="inp" style="flex:1" id="v${n}-tel" placeholder="809-555-1234"></div></div>`:''}
+    ${tipo==='Adulto'?`<div class="fld"><label class="lbl">Teléfono / WhatsApp</label><div class="phone-row"><div class="phone-pfx">DO +1</div><input type="tel" class="inp" style="flex:1" id="v${n}-tel" placeholder="809-555-1234" maxlength="12" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div></div>`:''}
     <div class="emg-box">
       <div class="emg-title">Contacto de emergencia</div>
       <div class="fld" style="margin-bottom:10px"><input type="text" class="inp" id="v${n}-emg-nom" placeholder="Nombre completo"></div>
-      <div class="phone-row"><div class="phone-pfx">🇩🇴 +1</div><input type="tel" class="inp" style="flex:1" id="v${n}-emg-tel" placeholder="809-555-1234"></div>
+      <div class="phone-row"><div class="phone-pfx">DO +1</div><input type="tel" class="inp" style="flex:1" id="v${n}-emg-tel" placeholder="809-555-1234" maxlength="12" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
     </div>
   </div>
 </div>${sep}`;
@@ -1249,16 +1257,44 @@ function validarViajeros(){
     if(!doc||!doc.value.trim()){if(doc)doc.classList.add('error');ok=false;}else if(doc)doc.classList.remove('error');
   }
   if(!ok){alert('Por favor completa nombre, apellido y documento de cada viajero.');return;}
+  // Guardar datos de viajeros en estado
+  S.viajeros=[];
+  for(let i=1;i<=total;i++){
+    S.viajeros.push({
+      nombre:document.getElementById('v'+i+'-nombre')?.value.trim()||'',
+      apellido:document.getElementById('v'+i+'-apellido')?.value.trim()||'',
+      doc:document.getElementById('v'+i+'-doc')?.value.trim()||'',
+      tel:document.getElementById('v'+i+'-tel')?.value.trim()||'',
+      tipo:i<=S.adultos?'Adulto':'Niño'
+    });
+  }
+  // Titular auto-fill WhatsApp
+  const titChk=document.getElementById('titular1');
+  S.titularCheck=!!(titChk&&titChk.checked);
+  if(S.titularCheck&&S.viajeros[0]?.tel){
+    S.whatsapp='+1-'+S.viajeros[0].tel;
+    const waInput=document.getElementById('wa-num');
+    if(waInput){waInput.value=S.viajeros[0].tel;}
+    set('wa-titular-num','+1-'+S.viajeros[0].tel);
+  }
+  // Mostrar/ocultar campo WA en S5
+  const waRow=document.getElementById('wa-row');
+  if(waRow)waRow.style.display=S.titularCheck?'none':'block';
+  const waTitular=document.getElementById('wa-titular-info');
+  if(waTitular)waTitular.style.display=S.titularCheck?'flex':'none';
+  if(S.titularCheck)document.getElementById('buy-btn').disabled=false;
   go(5);
 }
 
 // ─── Paso 5 ───
 function checkBuyBtn(){document.getElementById('buy-btn').disabled=!document.getElementById('chk-terms').checked;}
 function irAPago(){
-  const wa=document.getElementById('wa-num').value.trim();
-  if(wa.replace(/[^0-9]/g,'').length<7){show('err-wa');document.getElementById('wa-num').classList.add('error');return;}
-  hide('err-wa');document.getElementById('wa-num').classList.remove('error');
-  S.whatsapp='+1-'+wa;
+  if(!S.titularCheck){
+    const wa=document.getElementById('wa-num').value.trim();
+    if(wa.replace(/[^0-9]/g,'').length<7){show('err-wa');document.getElementById('wa-num').classList.add('error');return;}
+    hide('err-wa');document.getElementById('wa-num').classList.remove('error');
+    S.whatsapp='+1-'+wa;
+  }
   const t='RD$'+fmtN(S.prima);set('pago-total-lbl',t);set('pagar-amt',t);
   go(6);
 }
@@ -1418,6 +1454,20 @@ function downloadPoliza(){
     dataCell('TOTAL PAGADO',totalFinal,col2,y);
     y+=18;
     doc.setDrawColor(221,225,231);doc.line(M,y,W-M,y);y+=10;
+    // ── Viajeros ──
+    if(S.viajeros&&S.viajeros.length>0){
+      y=secHdr('VIAJEROS ASEGURADOS',y);
+      S.viajeros.forEach((v,i)=>{
+        if(i%2===0){doc.setFillColor(244,245,247);doc.rect(M,y-2,CW,9,'F');}
+        doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(17,24,39);
+        doc.text((i+1)+'. '+v.nombre+' '+v.apellido,M+5,y+4.5);
+        doc.setFont('helvetica','normal');doc.setTextColor(107,114,128);
+        doc.text(v.tipo+(v.doc?' · Doc: '+v.doc:''),W-M-3,y+4.5,{align:'right'});
+        y+=9;
+      });
+      y+=8;
+      doc.setDrawColor(221,225,231);doc.line(M,y,W-M,y);y+=10;
+    }
     // ── Coberturas ──
     y=secHdr('COBERTURAS INCLUIDAS',y);
     const covs=[
@@ -1466,7 +1516,9 @@ function downloadPoliza(){
   },250);
 }
 function resetAll(){
-  S.adultos=1;S.ninos=0;S.cs1=false;S.cs2=false;S.tipoViaje='';S.extrasMode=false;
+  S.adultos=1;S.ninos=0;S.cs1=false;S.cs2=false;S.tipoViaje='';S.extrasMode=false;S.viajeros=[];S.titularCheck=false;S.whatsapp='';
+  const waRow=document.getElementById('wa-row');if(waRow)waRow.style.display='block';
+  const waTi=document.getElementById('wa-titular-info');if(waTi)waTi.style.display='none';
   ['placer','negocios','estudio'].forEach(id=>document.getElementById('tipo-'+id).classList.remove('selected'));
   ['n-a','n-n'].forEach((id,i)=>set(id,i===0?1:0));
   document.getElementById('btn-am').disabled=true;document.getElementById('btn-nm').disabled=true;
